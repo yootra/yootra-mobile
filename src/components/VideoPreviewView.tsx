@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ArrowLeft, ArrowRight, MoreVertical, Play, Music, Film, Download } from 'lucide-react';
 import type { VideoInfo, VideoFormat } from '../types/ytdl';
+import { formatDuration, formatFileSize, formatViewCount } from '../utils/formatters';
 
 interface VideoPreviewViewProps {
   videoInfo: VideoInfo;
@@ -25,13 +26,6 @@ export const VideoPreviewView: React.FC<VideoPreviewViewProps> = ({
   const selectedFormat =
     videoInfo.formats.find((f) => f.formatId === selectedFormatId) ||
     videoInfo.formats[0];
-
-  const formatSizeText = (bytes: number) => {
-    if (!bytes) return '207 MB';
-    const mb = bytes / (1024 * 1024);
-    if (mb > 1000) return `${(mb / 1024).toFixed(1)} GB`;
-    return `${mb.toFixed(0)} MB`;
-  };
 
   return (
     <div className="space-y-5 animate-in fade-in duration-300">
@@ -62,8 +56,8 @@ export const VideoPreviewView: React.FC<VideoPreviewViewProps> = ({
             <Play className="w-6 h-6 fill-white stroke-none ml-0.5" />
           </div>
         </div>
-        <div className="absolute bottom-2 right-2 bg-black/80 text-white text-xs font-semibold px-2 py-0.5 rounded-md">
-          {videoInfo.durationFormatted || '12:45'}
+        <div className="absolute bottom-2 right-2 bg-black/80 text-white text-xs font-semibold px-2 py-0.5 rounded-md font-mono">
+          {videoInfo.durationFormatted || formatDuration(videoInfo.duration)}
         </div>
       </div>
 
@@ -74,7 +68,7 @@ export const VideoPreviewView: React.FC<VideoPreviewViewProps> = ({
         <div className="flex items-center gap-2 text-xs text-base-content/60">
           <span className="font-semibold">{videoInfo.uploader}</span>
           <span>•</span>
-          <span>{(videoInfo.viewCount || 1300000).toLocaleString()} views</span>
+          <span>{formatViewCount(videoInfo.viewCount, i18n.language)} {isRtl ? 'بازدید' : 'views'}</span>
         </div>
       </div>
 
@@ -120,7 +114,7 @@ export const VideoPreviewView: React.FC<VideoPreviewViewProps> = ({
                 </div>
 
                 <span className="text-xs font-mono text-base-content/60">
-                  {formatSizeText(fmt.filesize)}
+                  {formatFileSize(fmt.filesize, fmt.qualityLabel, videoInfo.duration)}
                 </span>
               </div>
             );

@@ -11,6 +11,7 @@ import type { VideoInfo, VideoFormat, DownloadItem, AppSettings } from './types/
 import { YtDlpService } from './services/ytdlpService';
 import { NotificationService } from './services/notificationService';
 import { StatusBarService } from './services/statusBarService';
+import { parseFileSizeInBytes, formatFileSize, sanitizeEta } from './utils/formatters';
 import { Toast } from '@capacitor/toast';
 
 export const App: React.FC = () => {
@@ -111,6 +112,8 @@ export const App: React.FC = () => {
     const format = selectedFormatToDownload;
     const downloadId = Date.now().toString();
 
+    const computedSizeBytes = parseFileSizeInBytes(format.filesize, format.qualityLabel, videoInfo.duration);
+
     const newItem: DownloadItem = {
       id: downloadId,
       url: videoInfo.url,
@@ -120,9 +123,12 @@ export const App: React.FC = () => {
       qualityLabel: format.qualityLabel,
       ext: format.ext,
       progress: 0,
-      speed: '4.8 MB/s',
-      eta: '00:01:24',
+      speed: '0 MB/s',
+      eta: sanitizeEta('-1', i18n.language),
       status: 'downloading',
+      fileSize: computedSizeBytes,
+      duration: videoInfo.duration,
+      durationFormatted: videoInfo.durationFormatted,
       timestamp: Date.now()
     };
 
@@ -146,7 +152,7 @@ export const App: React.FC = () => {
                   ...item,
                   progress,
                   speed,
-                  eta,
+                  eta: sanitizeEta(eta, i18n.language),
                   status: (status as DownloadItem['status']) || item.status,
                   filePath: path || item.filePath,
                   errorMsg: errorMsg || item.errorMsg
@@ -166,11 +172,12 @@ export const App: React.FC = () => {
         )
       );
 
+      const readableSize = formatFileSize(computedSizeBytes, format.qualityLabel, videoInfo.duration);
       await NotificationService.sendDownloadCompletedNotification(
         videoInfo.title,
         format.qualityLabel,
         format.ext,
-        '412 MB'
+        readableSize
       );
     } catch {
       setDownloads((prev) =>
@@ -227,22 +234,9 @@ export const App: React.FC = () => {
               />
             )}
 
-            {currentView === 'downloading' && (
+            {currentView === 'downloading' && activeDownload && (
               <DownloadingView
-                item={activeDownload || downloads[0] || {
-                  id: 'demo',
-                  url: '',
-                  title: videoInfo?.title || 'YouTube Video',
-                  thumbnail: videoInfo?.thumbnail || '',
-                  formatId: '1080p',
-                  qualityLabel: '1080p (Full HD)',
-                  ext: 'mp4',
-                  progress: 72,
-                  speed: '4.8 MB/s',
-                  eta: '00:01:24',
-                  status: 'downloading',
-                  timestamp: Date.now()
-                }}
+                item={activeDownload}
                 onBack={() => setCurrentView('home')}
                 onCancel={handleCancelDownload}
               />

@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "oxlint",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "cap:sync":  "vite build && bun x cap sync android"
   },
   "dependencies": {
     "@capacitor/clipboard": "^8.0.1",

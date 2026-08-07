@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Folder, Sliders, Moon, Bell, DownloadCloud, Globe, Star, Share2, Info, ChevronRight, ChevronLeft } from 'lucide-react';
+import { Folder, Sliders, Moon, Bell, DownloadCloud, Globe, Star, Share2, Info, ChevronRight, ChevronLeft, Edit3, Check } from 'lucide-react';
 import type { AppSettings } from '../types/ytdl';
+import { Toast } from '@capacitor/toast';
 
 interface SettingsViewProps {
   settings: AppSettings;
@@ -18,6 +19,23 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   const isRtl = i18n.language === 'fa';
   const ChevronIcon = isRtl ? ChevronLeft : ChevronRight;
 
+  const [isEditingFolder, setIsEditingFolder] = useState(false);
+  const [customPathInput, setCustomPathInput] = useState(settings.downloadLocation || 'Movies');
+
+  const showToast = async (text: string) => {
+    try {
+      await Toast.show({ text, duration: 'short' });
+    } catch {}
+  };
+
+  const handleSaveCustomPath = () => {
+    if (customPathInput.trim()) {
+      onUpdateSettings({ ...settings, downloadLocation: customPathInput.trim() });
+      setIsEditingFolder(false);
+      showToast(isRtl ? 'مسیر ذخیره‌سازی ذخیره شد.' : 'Download location saved.');
+    }
+  };
+
   return (
     <div className="space-y-6 animate-in fade-in duration-300 pb-10">
       <div className="pt-1">
@@ -32,19 +50,73 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
         </h2>
 
         <div className="bg-base-200/60 border border-base-300 rounded-2xl divide-y divide-base-300/60 overflow-hidden shadow-xs">
-          <div className="p-4 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Folder className="w-5 h-5 text-base-content/60" />
-              <div>
-                <div className="text-sm font-semibold text-base-content">
-                  {t('settings.downloadLocation')}
-                </div>
-                <div className="text-xs text-base-content/50 font-mono mt-0.5 truncate max-w-[200px]">
-                  /storage/emulated/0/YouTube Downloader
+          <div className="p-4 space-y-2">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Folder className="w-5 h-5 text-base-content/60" />
+                <div>
+                  <div className="text-sm font-semibold text-base-content">
+                    {t('settings.downloadLocation')}
+                  </div>
+                  <div className="text-xs text-base-content/50 font-mono mt-0.5 dir-ltr text-left">
+                    {settings.downloadLocation || 'Movies'}
+                  </div>
                 </div>
               </div>
+              <button
+                type="button"
+                onClick={() => setIsEditingFolder(!isEditingFolder)}
+                className="btn btn-xs btn-ghost gap-1 text-xs text-base-content/70 hover:text-base-content"
+              >
+                <Edit3 className="w-3.5 h-3.5" />
+                {isRtl ? 'تغییر مسیر' : 'Change'}
+              </button>
             </div>
-            <ChevronIcon className="w-5 h-5 text-base-content/40" />
+
+            {isEditingFolder && (
+              <div className="pt-2 space-y-2.5 bg-base-300/40 p-3 rounded-xl">
+                <div className="space-y-1">
+                  <label className="text-xs font-semibold text-base-content/70">
+                    {isRtl ? 'انتخاب پوشه پیش‌فرض یا مسیر سفارشی:' : 'Select default folder or custom path:'}
+                  </label>
+                  <select
+                    value={['Movies', 'Downloads', 'Music', 'DCIM'].includes(settings.downloadLocation) ? settings.downloadLocation : 'custom'}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      if (val !== 'custom') {
+                        setCustomPathInput(val);
+                        onUpdateSettings({ ...settings, downloadLocation: val });
+                        showToast(isRtl ? `مسیر ذخیره‌سازی به ${val} تغییر یافت` : `Location set to ${val}`);
+                      }
+                    }}
+                    className="select select-sm select-bordered w-full text-xs"
+                  >
+                    <option value="Movies">Movies (/storage/emulated/0/Movies)</option>
+                    <option value="Downloads">Downloads (/storage/emulated/0/Download)</option>
+                    <option value="Music">Music (/storage/emulated/0/Music)</option>
+                    <option value="DCIM">DCIM (/storage/emulated/0/DCIM)</option>
+                    <option value="custom">{isRtl ? 'مسیر دلخواه...' : 'Custom folder path...'}</option>
+                  </select>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <input
+                    type="text"
+                    value={customPathInput}
+                    onChange={(e) => setCustomPathInput(e.target.value)}
+                    placeholder="/storage/emulated/0/YouTube Downloader"
+                    className="input input-sm input-bordered w-full text-xs font-mono"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleSaveCustomPath}
+                    className="btn btn-sm bg-[#ba2c2c] hover:bg-[#a02424] text-white border-none shrink-0"
+                  >
+                    <Check className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="p-4 flex items-center justify-between">
@@ -55,7 +127,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                   {t('settings.defaultQuality')}
                 </div>
                 <div className="text-xs text-base-content/50 mt-0.5">
-                  {settings.defaultQuality || '1080p (Full HD)'}
+                  {settings.defaultQuality || '1080p'}
                 </div>
               </div>
             </div>

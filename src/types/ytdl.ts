@@ -38,6 +38,8 @@ export interface DownloadItem {
   status: 'idle' | 'fetching' | 'downloading' | 'completed' | 'error' | 'cancelled';
   filePath?: string;
   fileSize?: number;
+  duration?: number;
+  durationFormatted?: string;
   timestamp: number;
   errorMsg?: string;
 }
@@ -47,5 +49,5 @@ export interface AppSettings {
   downloadLocation: string;
   autoPasteClipboard: boolean;
   maxSimultaneousDownloads: number;
-  theme: 'dark' | 'synthwave' | 'dim';
+  theme: 'light' | 'dark' | 'synthwave' | 'dim' | 'emerald' | 'cupcake';
 }

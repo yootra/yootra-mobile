@@ -2,12 +2,12 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { ArrowLeft, ArrowRight, MoreVertical, Pause, X } from 'lucide-react';
 import type { DownloadItem } from '../types/ytdl';
+import { formatFileSize, parseFileSizeInBytes, sanitizeEta } from '../utils/formatters';
 
 interface DownloadingViewProps {
   item: DownloadItem;
   onBack: () => void;
   onCancel: (id: string) => void;
-  onPauseToggle?: (id: string) => void;
 }
 
 export const DownloadingView: React.FC<DownloadingViewProps> = ({
@@ -17,9 +17,15 @@ export const DownloadingView: React.FC<DownloadingViewProps> = ({
 }) => {
   const { t, i18n } = useTranslation();
   const isRtl = i18n.language === 'fa';
-  const progress = item.progress || 72;
+  const progress = Math.min(Math.max(item.progress || 0, 0), 100);
 
   const strokeDashoffset = 440 - (440 * progress) / 100;
+
+  const totalBytes = parseFileSizeInBytes(item.fileSize, item.qualityLabel, item.duration || 180);
+  const downloadedBytes = (totalBytes * progress) / 100;
+
+  const formattedTotal = formatFileSize(totalBytes, item.qualityLabel, item.duration || 180);
+  const formattedDownloaded = formatFileSize(downloadedBytes, item.qualityLabel, item.duration || 180);
 
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
@@ -83,7 +89,7 @@ export const DownloadingView: React.FC<DownloadingViewProps> = ({
               {t('downloading.speed')}
             </span>
             <span className="text-sm font-bold text-base-content font-mono mt-0.5">
-              {item.speed || '4.8 MB/s'}
+              {item.speed || '0 MB/s'}
             </span>
           </div>
 
@@ -94,7 +100,7 @@ export const DownloadingView: React.FC<DownloadingViewProps> = ({
               {t('downloading.remaining')}
             </span>
             <span className="text-sm font-bold text-base-content font-mono mt-0.5">
-              {item.eta || '00:01:24'}
+              {sanitizeEta(item.eta, i18n.language)}
             </span>
           </div>
         </div>
@@ -134,8 +140,8 @@ export const DownloadingView: React.FC<DownloadingViewProps> = ({
               <h3 className="font-bold text-xs text-base-content truncate">
                 {item.title}
               </h3>
-              <div className="text-[11px] text-base-content/60">
-                {item.qualityLabel} • 1.2 GB
+              <div className="text-[11px] text-base-content/60 font-mono">
+                {item.qualityLabel} • {formattedTotal}
               </div>
             </div>
           </div>
@@ -148,7 +154,7 @@ export const DownloadingView: React.FC<DownloadingViewProps> = ({
               ></div>
             </div>
             <div className="flex items-center justify-between text-[11px] font-mono text-base-content/60">
-              <span>864 MB / 1.2 GB</span>
+              <span>{formattedDownloaded} / {formattedTotal}</span>
               <span>{progress}%</span>
             </div>
           </div>

@@ -54,7 +54,11 @@ export class YtDlpService {
       return new Promise(async (resolve, reject) => {
         const listener = await YtDlpNative.addListener('downloadProgress', (data) => {
           if (data.downloadId === downloadId) {
-            onProgress(data.progress, data.speed || '0 MB/s', data.eta || 'downloading', data.status, data.filePath, data.errorMsg);
+            let cleanEta = data.eta;
+            if (!cleanEta || cleanEta === '-1' || cleanEta.includes('-') || cleanEta === '0') {
+              cleanEta = 'Calculating...';
+            }
+            onProgress(data.progress, data.speed || '0 MB/s', cleanEta, data.status, data.filePath, data.errorMsg);
 
             if (data.status === 'completed') {
               if (removeListener) removeListener();
@@ -75,7 +79,7 @@ export class YtDlpService {
       });
     } catch (err: any) {
       logger.addLog('warn', `Native download engine unavailable or failed: ${err?.message || err}. Running web simulation.`);
-      return this.simulateBrowserDownload(title, onProgress);
+      return this.simulateBrowserDownload(title, downloadLocation, onProgress);
     }
   }
 
@@ -93,45 +97,48 @@ export class YtDlpService {
     const videoIdMatch = url.match(/(?:v=|\/embed\/|\/1.1\/|\/v\/|https:\/\/youtu\.be\/|\/shorts\/)([a-zA-Z0-9_-]{11})/);
     const id = videoIdMatch ? videoIdMatch[1] : 'sample-id';
     
+    const duration = 225;
     const sampleFormats: VideoFormat[] = [
-      { formatId: '1080p', qualityLabel: '1080p Full HD', ext: 'mp4', resolution: '1920x1080', filesize: 95000000, isVideoOnly: false, isAudioOnly: false },
+      { formatId: '1080p', qualityLabel: '1080p Full HD', ext: 'mp4', resolution: '1920x1080', filesize: 78750000, isVideoOnly: false, isAudioOnly: false },
       { formatId: '720p', qualityLabel: '720p HD', ext: 'mp4', resolution: '1280x720', filesize: 45000000, isVideoOnly: false, isAudioOnly: false },
-      { formatId: '480p', qualityLabel: '480p SD', ext: 'mp4', resolution: '854x480', filesize: 22000000, isVideoOnly: false, isAudioOnly: false },
-      { formatId: '360p', qualityLabel: '360p Low', ext: 'mp4', resolution: '640x360', filesize: 12000000, isVideoOnly: false, isAudioOnly: false },
-      { formatId: 'audio-mp3', qualityLabel: 'Audio Only (MP3)', ext: 'mp3', resolution: 'Audio', filesize: 6500000, isVideoOnly: false, isAudioOnly: true },
+      { formatId: '480p', qualityLabel: '480p SD', ext: 'mp4', resolution: '854x480', filesize: 24750000, isVideoOnly: false, isAudioOnly: false },
+      { formatId: '360p', qualityLabel: '360p Low', ext: 'mp4', resolution: '640x360', filesize: 15750000, isVideoOnly: false, isAudioOnly: false },
+      { formatId: 'audio-mp3', qualityLabel: 'Audio Only (MP3)', ext: 'mp3', resolution: 'Audio', filesize: 3600000, isVideoOnly: false, isAudioOnly: true },
     ];
 
     return {
       id,
       url,
       title: 'YouTube Video (' + id + ')',
-      description: 'Extracted locally on Android device',
+      description: 'Extracted video details',
       thumbnail: `https://img.youtube.com/vi/${id}/hqdefault.jpg`,
-      duration: 300,
-      durationFormatted: '05:00',
-      uploader: 'YouTube Channel',
-      viewCount: 1200000,
+      duration: duration,
+      durationFormatted: '03:45',
+      uploader: 'YouTube Creator',
+      viewCount: 1250000,
       formats: sampleFormats
     };
   }
 
   private static simulateBrowserDownload(
     title: string,
+    downloadLocation: string,
     onProgress: (progress: number, speed: string, eta: string, status: string, filePath?: string) => void
   ): Promise<string> {
     return new Promise((resolve) => {
       let currentProgress = 0;
       const interval = setInterval(() => {
         currentProgress += 5;
-        const speed = '3.5 MB/s';
-        const eta = `${Math.ceil((100 - currentProgress) / 5)}s`;
+        const speed = '4.2 MB/s';
+        const remainingSec = Math.ceil((100 - currentProgress) / 5);
+        const eta = remainingSec > 0 ? `00:00:${remainingSec < 10 ? '0' : ''}${remainingSec}` : '00:00:00';
         onProgress(currentProgress, speed, eta, currentProgress >= 100 ? 'completed' : 'downloading');
 
         if (currentProgress >= 100) {
           clearInterval(interval);
-          resolve(`storage/movies/${title.replace(/[^a-zA-Z0-9]/g, '_')}.mp4`);
+          resolve(`${downloadLocation}/${title.replace(/[^a-zA-Z0-9]/g, '_')}.mp4`);
         }
-      }, 300);
+      }, 250);
     });
   }
 }

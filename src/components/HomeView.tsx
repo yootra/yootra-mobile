@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Settings, Clipboard, Download, MoreVertical, CheckCircle2 } from 'lucide-react';
 import { Clipboard as CapClipboard } from '@capacitor/clipboard';
 import type { DownloadItem } from '../types/ytdl';
+import { formatDuration, formatFileSize } from '../utils/formatters';
 
 interface HomeViewProps {
   onFetchInfo: (url: string) => void;
@@ -140,19 +141,21 @@ export const HomeView: React.FC<HomeViewProps> = ({
                     alt={item.title}
                     className="w-full h-full object-cover"
                   />
-                  <div className="absolute bottom-1 right-1 bg-black/80 text-white text-[10px] font-medium px-1.5 py-0.5 rounded">
-                    12:45
-                  </div>
+                  {item.durationFormatted && (
+                    <div className="absolute bottom-1 right-1 bg-black/80 text-white text-[10px] font-medium px-1.5 py-0.5 rounded font-mono">
+                      {item.durationFormatted || formatDuration(item.duration)}
+                    </div>
+                  )}
                 </div>
 
                 <div className="flex-1 min-w-0 space-y-1">
                   <h3 className="font-semibold text-xs text-base-content line-clamp-2 leading-snug">
                     {item.title}
                   </h3>
-                  <div className="flex items-center gap-2 text-[11px] text-base-content/60">
+                  <div className="flex items-center gap-2 text-[11px] text-base-content/60 font-mono">
                     <span>{item.qualityLabel}</span>
                     <span>•</span>
-                    <span>1.2 GB</span>
+                    <span>{formatFileSize(item.fileSize, item.qualityLabel, item.duration || 180)}</span>
                   </div>
                   <div className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-950/60 px-2 py-0.5 rounded-full">
                     <CheckCircle2 className="w-3 h-3" />

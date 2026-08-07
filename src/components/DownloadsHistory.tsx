@@ -4,6 +4,7 @@ import { Search, MoreVertical, Folder, Share2, Trash2, CheckCircle2, Plus, Play,
 import { Share } from '@capacitor/share';
 import { Capacitor } from '@capacitor/core';
 import type { DownloadItem } from '../types/ytdl';
+import { formatDuration, formatFileSize } from '../utils/formatters';
 
 interface DownloadsHistoryProps {
   downloads: DownloadItem[];
@@ -133,9 +134,11 @@ export const DownloadsHistory: React.FC<DownloadsHistoryProps> = ({
                   >
                     <Play className="w-6 h-6 fill-white stroke-none" />
                   </button>
-                  <div className="absolute bottom-1 right-1 bg-black/80 text-white text-[9px] font-semibold px-1 py-0.5 rounded">
-                    12:45
-                  </div>
+                  {item.durationFormatted && (
+                    <div className="absolute bottom-1 right-1 bg-black/80 text-white text-[9px] font-semibold px-1 py-0.5 rounded font-mono">
+                      {item.durationFormatted || formatDuration(item.duration)}
+                    </div>
+                  )}
                 </div>
 
                 <div className="flex-1 min-w-0 space-y-1">
@@ -150,7 +153,7 @@ export const DownloadsHistory: React.FC<DownloadsHistoryProps> = ({
                   <div className="text-[11px] text-base-content/60 flex items-center gap-1.5 font-mono">
                     <span>{item.qualityLabel}</span>
                     <span>•</span>
-                    <span>1.2 GB</span>
+                    <span>{formatFileSize(item.fileSize, item.qualityLabel, item.duration || 180)}</span>
                   </div>
                 </div>
               </div>
