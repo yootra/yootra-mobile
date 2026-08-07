@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">YT_Downloader</string>
+    <string name="title_activity_main">YT_Downloader</string>
+    <string name="package_name">com.ytdl.app</string>
+    <string name="custom_url_scheme">com.ytdl.app</string>
+</resources>
