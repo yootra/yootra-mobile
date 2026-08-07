@@ -1,0 +1,70 @@
+{
+  "app": {
+    "title": "YouTube Downloader"
+  },
+  "nav": {
+    "home": "Home",
+    "downloads": "Downloads",
+    "settings": "Settings"
+  },
+  "home": {
+    "title": "Download Video",
+    "subtitle": "Paste any YouTube link",
+    "placeholder": "Paste YouTube URL...",
+    "downloadBtn": "Download",
+    "fetching": "Loading...",
+    "recentDownloads": "Recent Downloads",
+    "viewAll": "View all",
+    "noRecent": "No recent downloads yet."
+  },
+  "preview": {
+    "chooseQuality": "Choose quality",
+    "audioOnly": "Audio Only (MP3)",
+    "downloadBtn": "Download"
+  },
+  "downloading": {
+    "title": "Downloading",
+    "downloadingText": "Downloading..",
+    "speed": "Speed",
+    "remaining": "Remaining",
+    "pause": "Pause",
+    "cancel": "Cancel",
+    "currentFile": "Current file"
+  },
+  "downloads": {
+    "title": "Downloads",
+    "searchPlaceholder": "Search downloads",
+    "all": "All",
+    "completed": "Completed",
+    "inProgress": "Downloading",
+    "video": "Video",
+    "audio": "Audio",
+    "empty": "No downloads found",
+    "emptySub": "Downloaded videos and music will appear here."
+  },
+  "settings": {
+    "title": "Settings",
+    "general": "General",
+    "downloadLocation": "Download location",
+    "defaultQuality": "Default quality",
+    "theme": "Theme",
+    "notifications": "Notifications",
+    "backgroundDownloads": "Background downloads",
+    "language": "Language",
+    "about": "About",
+    "rateApp": "Rate this app",
+    "shareApp": "Share this app",
+    "version": "Version"
+  },
+  "bottomSheet": {
+    "title": "Support Content Creators 💛",
+    "message": "Content creators spend a lot of time and effort producing these videos. To support their channels and encourage continued creation, please try to watch the video at least once on YouTube and refrain from public redistribution of downloaded files.",
+    "confirm": "I Understand & Download",
+    "cancel": "Cancel"
+  },
+  "status": {
+    "completed": "Completed",
+    "failed": "Failed",
+    "cancelled": "Cancelled"
+  }
+}

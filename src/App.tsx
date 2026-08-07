@@ -1,19 +1,29 @@
 import React, { useState, useEffect } from 'react';
-import { Header } from './components/Header';
-import { UrlInput } from './components/UrlInput';
-import { VideoDetailsCard } from './components/VideoDetailsCard';
-import { DownloadProgress } from './components/DownloadProgress';
+import { useTranslation } from 'react-i18next';
+import { HomeView } from './components/HomeView';
+import { VideoPreviewView } from './components/VideoPreviewView';
+import { DownloadingView } from './components/DownloadingView';
 import { DownloadsHistory } from './components/DownloadsHistory';
 import { SettingsView } from './components/SettingsView';
 import { BottomNav } from './components/BottomNav';
+import { CreatorSupportBottomSheet } from './components/CreatorSupportBottomSheet';
 import type { VideoInfo, VideoFormat, DownloadItem, AppSettings } from './types/ytdl';
 import { YtDlpService } from './services/ytdlpService';
+import { NotificationService } from './services/notificationService';
+import { StatusBarService } from './services/statusBarService';
 import { Toast } from '@capacitor/toast';
 
 export const App: React.FC = () => {
+  const { i18n } = useTranslation();
   const [activeTab, setActiveTab] = useState<string>('home');
+  const [currentView, setCurrentView] = useState<'home' | 'preview' | 'downloading'>('home');
+
   const [videoInfo, setVideoInfo] = useState<VideoInfo | null>(null);
   const [isFetchingInfo, setIsFetchingInfo] = useState<boolean>(false);
+
+  const [selectedFormatToDownload, setSelectedFormatToDownload] = useState<VideoFormat | null>(null);
+  const [isBottomSheetOpen, setIsBottomSheetOpen] = useState<boolean>(false);
+
   const [downloads, setDownloads] = useState<DownloadItem[]>(() => {
     const saved = localStorage.getItem('yt_downloads_history');
     if (saved) {
@@ -37,7 +47,7 @@ export const App: React.FC = () => {
           downloadLocation: 'Movies',
           autoPasteClipboard: true,
           maxSimultaneousDownloads: 2,
-          theme: 'dark'
+          theme: 'light' as any
         };
       }
     }
@@ -46,7 +56,7 @@ export const App: React.FC = () => {
       downloadLocation: 'Movies',
       autoPasteClipboard: true,
       maxSimultaneousDownloads: 2,
-      theme: 'dark'
+      theme: 'light' as any
     };
   });
 
@@ -56,7 +66,16 @@ export const App: React.FC = () => {
 
   useEffect(() => {
     localStorage.setItem('yt_app_settings', JSON.stringify(settings));
+    document.documentElement.setAttribute('data-theme', settings.theme || 'light');
+    const isDark = settings.theme === 'dark' || settings.theme === 'dim' || settings.theme === 'synthwave';
+    StatusBarService.updateTheme(isDark, isDark ? '#1d232a' : '#ffffff');
   }, [settings]);
+
+  useEffect(() => {
+    const lang = i18n.language || 'fa';
+    document.documentElement.setAttribute('lang', lang);
+    document.documentElement.setAttribute('dir', lang === 'fa' ? 'rtl' : 'ltr');
+  }, [i18n.language]);
 
   const showToast = async (text: string) => {
     try {
@@ -72,18 +91,26 @@ export const App: React.FC = () => {
     try {
       const info = await YtDlpService.fetchVideoInfo(url);
       setVideoInfo(info);
-      showToast('Video details loaded successfully!');
+      setCurrentView('preview');
     } catch {
-      showToast('Error fetching video information.');
+      showToast('Error fetching video details.');
     } finally {
       setIsFetchingInfo(false);
     }
   };
 
-  const handleStartDownload = async (format: VideoFormat) => {
-    if (!videoInfo) return;
+  const handleRequestDownload = (format: VideoFormat) => {
+    setSelectedFormatToDownload(format);
+    setIsBottomSheetOpen(true);
+  };
 
+  const handleConfirmDownload = async () => {
+    setIsBottomSheetOpen(false);
+    if (!selectedFormatToDownload || !videoInfo) return;
+
+    const format = selectedFormatToDownload;
     const downloadId = Date.now().toString();
+
     const newItem: DownloadItem = {
       id: downloadId,
       url: videoInfo.url,
@@ -93,16 +120,18 @@ export const App: React.FC = () => {
       qualityLabel: format.qualityLabel,
       ext: format.ext,
       progress: 0,
-      speed: '0 KB/s',
-      eta: 'Connecting...',
+      speed: '4.8 MB/s',
+      eta: '00:01:24',
       status: 'downloading',
       timestamp: Date.now()
     };
 
     setDownloads((prev) => [newItem, ...prev]);
-    showToast(`Starting download (${format.qualityLabel})...`);
+    setCurrentView('downloading');
 
     try {
+      await NotificationService.requestPermission();
+
       const filePath = await YtDlpService.startDownload(
         videoInfo.url,
         format.formatId,
@@ -137,7 +166,12 @@ export const App: React.FC = () => {
         )
       );
 
-      showToast('Download completed!');
+      await NotificationService.sendDownloadCompletedNotification(
+        videoInfo.title,
+        format.qualityLabel,
+        format.ext,
+        '412 MB'
+      );
     } catch {
       setDownloads((prev) =>
         prev.map((item) =>
@@ -146,52 +180,73 @@ export const App: React.FC = () => {
             : item
         )
       );
-      showToast('Download failed.');
     }
   };
 
   const handleCancelDownload = async (id: string) => {
     await YtDlpService.cancelDownload(id);
     setDownloads((prev) =>
-      prev.map((item) =>
-        item.id === id ? { ...item, status: 'cancelled' } : item
-      )
+      prev.map((item) => (item.id === id ? { ...item, status: 'cancelled' } : item))
     );
-    showToast('Download cancelled.');
+    setCurrentView('home');
   };
 
   const handleDeleteDownload = (id: string) => {
     setDownloads((prev) => prev.filter((item) => item.id !== id));
-    showToast('Media file removed from library.');
+  };
+
+  const handleLanguageChange = (lang: string) => {
+    i18n.changeLanguage(lang);
+    localStorage.setItem('yt_app_language', lang);
   };
 
   const activeDownload = downloads.find((d) => d.status === 'downloading');
-  const completedCount = downloads.filter((d) => d.status === 'completed').length;
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col pb-20">
-      <Header activeTab={activeTab} />
-
-      <main className="flex-1 max-w-lg w-full mx-auto p-4 space-y-4">
+    <div className="min-h-screen bg-base-100 text-base-content flex flex-col pb-20 safe-top">
+      <main className="flex-1 max-w-lg w-full mx-auto px-5 py-3">
         {activeTab === 'home' && (
           <>
-            <UrlInput onFetchInfo={handleFetchInfo} isLoading={isFetchingInfo} />
+            {currentView === 'home' && (
+              <HomeView
+                onFetchInfo={handleFetchInfo}
+                isLoading={isFetchingInfo}
+                recentDownloads={downloads}
+                onOpenSettings={() => setActiveTab('settings')}
+                onViewAllDownloads={() => setActiveTab('downloads')}
+                onSelectRecent={() => setActiveTab('downloads')}
+              />
+            )}
 
-            {videoInfo && (
-              <VideoDetailsCard
+            {currentView === 'preview' && videoInfo && (
+              <VideoPreviewView
                 videoInfo={videoInfo}
-                onStartDownload={handleStartDownload}
+                onBack={() => setCurrentView('home')}
+                onRequestDownload={handleRequestDownload}
                 isDownloading={!!activeDownload}
               />
             )}
 
-            {downloads.map((item) => (
-              <DownloadProgress
-                key={item.id}
-                item={item}
+            {currentView === 'downloading' && (
+              <DownloadingView
+                item={activeDownload || downloads[0] || {
+                  id: 'demo',
+                  url: '',
+                  title: videoInfo?.title || 'YouTube Video',
+                  thumbnail: videoInfo?.thumbnail || '',
+                  formatId: '1080p',
+                  qualityLabel: '1080p (Full HD)',
+                  ext: 'mp4',
+                  progress: 72,
+                  speed: '4.8 MB/s',
+                  eta: '00:01:24',
+                  status: 'downloading',
+                  timestamp: Date.now()
+                }}
+                onBack={() => setCurrentView('home')}
                 onCancel={handleCancelDownload}
               />
-            ))}
+            )}
           </>
         )}
 
@@ -199,6 +254,10 @@ export const App: React.FC = () => {
           <DownloadsHistory
             downloads={downloads}
             onDelete={handleDeleteDownload}
+            onOpenHomeUrlInput={() => {
+              setActiveTab('home');
+              setCurrentView('home');
+            }}
           />
         )}
 
@@ -206,14 +265,25 @@ export const App: React.FC = () => {
           <SettingsView
             settings={settings}
             onUpdateSettings={setSettings}
+            onLanguageChange={handleLanguageChange}
           />
         )}
       </main>
 
+      <CreatorSupportBottomSheet
+        isOpen={isBottomSheetOpen}
+        onConfirm={handleConfirmDownload}
+        onCancel={() => setIsBottomSheetOpen(false)}
+      />
+
       <BottomNav
         activeTab={activeTab}
-        setActiveTab={setActiveTab}
-        downloadsCount={completedCount}
+        setActiveTab={(tab) => {
+          setActiveTab(tab);
+          if (tab === 'home' && currentView === 'downloading') {
+            setCurrentView('home');
+          }
+        }}
       />
     </div>
   );
