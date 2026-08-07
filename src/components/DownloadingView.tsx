@@ -17,7 +17,8 @@ export const DownloadingView: React.FC<DownloadingViewProps> = ({
 }) => {
   const { t, i18n } = useTranslation();
   const isRtl = i18n.language === 'fa';
-  const progress = Math.min(Math.max(item.progress || 0, 0), 100);
+  const isCompleted = item.status === 'completed';
+  const progress = isCompleted ? 100 : Math.min(Math.max(item.progress || 0, 0), 100);
 
   const strokeDashoffset = 440 - (440 * progress) / 100;
 
@@ -42,12 +43,7 @@ export const DownloadingView: React.FC<DownloadingViewProps> = ({
             {t('downloading.title')}
           </h1>
         </div>
-        <button
-          type="button"
-          className="btn btn-circle btn-ghost text-base-content/60"
-        >
-          <MoreVertical className="w-5 h-5" />
-        </button>
+ 
       </div>
 
       <div className="flex flex-col items-center justify-center py-6 space-y-4">
@@ -78,7 +74,7 @@ export const DownloadingView: React.FC<DownloadingViewProps> = ({
               {progress}%
             </span>
             <span className="text-xs font-semibold text-base-content/60 mt-1">
-              {t('downloading.downloadingText')}
+              {isCompleted ? t('status.completed') : t('downloading.downloadingText')}
             </span>
           </div>
         </div>
@@ -89,7 +85,7 @@ export const DownloadingView: React.FC<DownloadingViewProps> = ({
               {t('downloading.speed')}
             </span>
             <span className="text-sm font-bold text-base-content font-mono mt-0.5">
-              {item.speed || '0 MB/s'}
+              {isCompleted ? '-' : (item.speed || '0 MB/s')}
             </span>
           </div>
 
@@ -100,28 +96,39 @@ export const DownloadingView: React.FC<DownloadingViewProps> = ({
               {t('downloading.remaining')}
             </span>
             <span className="text-sm font-bold text-base-content font-mono mt-0.5">
-              {sanitizeEta(item.eta, i18n.language)}
+              {isCompleted ? '-' : sanitizeEta(item.eta, i18n.language)}
             </span>
           </div>
         </div>
 
-        <div className="flex items-center gap-3 w-full pt-4">
-          <button
-            type="button"
-            className="flex-1 btn btn-outline border-base-300 hover:bg-base-200 text-base-content font-bold rounded-2xl gap-2"
-          >
-            <Pause className="w-4 h-4" />
-            {t('downloading.pause')}
-          </button>
-          <button
-            type="button"
-            onClick={() => onCancel(item.id)}
-            className="flex-1 btn btn-outline border-red-300 dark:border-red-900 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 font-bold rounded-2xl gap-2"
-          >
-            <X className="w-4 h-4" />
-            {t('downloading.cancel')}
-          </button>
-        </div>
+        {isCompleted ? (
+          <div className="flex items-center justify-center w-full pt-4">
+            <button
+              onClick={onBack}
+              className="btn bg-success/10 text-success hover:bg-success/20 border-transparent font-bold rounded-2xl w-full text-base"
+            >
+              {t('status.completed')} - {t('nav.home')}
+            </button>
+          </div>
+        ) : (
+          <div className="flex items-center gap-3 w-full pt-4">
+            <button
+              type="button"
+              className="flex-1 btn btn-outline border-base-300 hover:bg-base-200 text-base-content font-bold rounded-2xl gap-2"
+            >
+              <Pause className="w-4 h-4" />
+              {t('downloading.pause')}
+            </button>
+            <button
+              type="button"
+              onClick={() => onCancel(item.id)}
+              className="flex-1 btn btn-outline border-red-300 dark:border-red-900 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 font-bold rounded-2xl gap-2"
+            >
+              <X className="w-4 h-4" />
+              {t('downloading.cancel')}
+            </button>
+          </div>
+        )}
       </div>
 
       <div className="space-y-3 pt-2">

@@ -13,7 +13,7 @@ import com.yausername.youtubedl_android.YoutubeDLRequest;
 import com.yausername.youtubedl_android.mapper.VideoInfo;
 import com.yausername.ffmpeg.FFmpeg;
 import kotlin.Unit;
-import kotlin.jvm.functions.Function3;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -43,6 +43,15 @@ public class YtDlpPlugin extends Plugin {
                 FFmpeg.getInstance().init(getContext());
                 isYtDlInitialized = true;
                 sendLog("info", "youtubedl-android native engine initialized.");
+
+                executor.execute(() -> {
+                    try {
+                        YoutubeDL.getInstance().updateYoutubeDL(getContext(), YoutubeDL.UpdateChannel._STABLE);
+                        sendLog("success", "yt-dlp core updated to latest version.");
+                    } catch (Exception ex) {
+                        sendLog("warn", "yt-dlp auto-update status: " + ex.getMessage());
+                    }
+                });
             } catch (Exception ex) {
                 sendLog("warn", "YoutubeDL init exception: " + ex.getMessage());
             }
@@ -59,10 +68,22 @@ public class YtDlpPlugin extends Plugin {
 
         sendLog("info", "Fetching info natively via youtubedl-android for: " + videoUrl);
 
+        String infoCookiesFilePath = call.getString("cookiesFilePath");
+
         executor.execute(() -> {
             try {
                 ensureYoutubeDLInitialized();
-                VideoInfo nativeInfo = YoutubeDL.getInstance().getInfo(videoUrl);
+                YoutubeDLRequest infoRequest = new YoutubeDLRequest(videoUrl);
+                infoRequest.addOption("--extractor-args", "youtube:player_client=android");
+                infoRequest.addOption("--no-warnings");
+                infoRequest.addOption("--no-check-certificates");
+                if (infoCookiesFilePath != null && !infoCookiesFilePath.isEmpty()) {
+                    File infoCookiesFile = new File(infoCookiesFilePath);
+                    if (infoCookiesFile.exists()) {
+                        infoRequest.addOption("--cookies", infoCookiesFile.getAbsolutePath());
+                    }
+                }
+                VideoInfo nativeInfo = YoutubeDL.getInstance().getInfo(infoRequest);
 
                 if (nativeInfo != null) {
                     String title = nativeInfo.getTitle() != null ? nativeInfo.getTitle() : "YouTube Video";
@@ -149,17 +170,34 @@ public class YtDlpPlugin extends Plugin {
                 ensureYoutubeDLInitialized();
                 sendLog("info", "Executing yt-dlp native binary for: " + videoUrl);
 
-                String formatSelector = "best[ext=mp4]/best";
-                if ("1080p".equals(formatId)) formatSelector = "bestvideo[height<=1080][ext=mp4]+bestaudio[ext=m4a]/best[height<=1080]";
-                else if ("720p".equals(formatId)) formatSelector = "bestvideo[height<=720][ext=mp4]+bestaudio[ext=m4a]/best[height<=720]";
-                else if ("480p".equals(formatId)) formatSelector = "bestvideo[height<=480][ext=mp4]+bestaudio[ext=m4a]/best[height<=480]";
-                else if ("360p".equals(formatId)) formatSelector = "bestvideo[height<=360][ext=mp4]+bestaudio[ext=m4a]/best[height<=360]";
-                else if (formatId != null && formatId.contains("audio")) formatSelector = "bestaudio/best";
+                String formatSelector = "b[ext=mp4]/best[ext=mp4]/b/best";
+                if ("1080p".equals(formatId)) formatSelector = "b[height<=1080]/best[height<=1080]/best";
+                else if ("720p".equals(formatId)) formatSelector = "b[height<=720]/best[height<=720]/best";
+                else if ("480p".equals(formatId)) formatSelector = "b[height<=480]/best[height<=480]/best";
+                else if ("360p".equals(formatId)) formatSelector = "b[height<=360]/best[height<=360]/best";
+                else if (formatId != null && formatId.contains("audio")) formatSelector = "ba/bestaudio/best";
 
                 YoutubeDLRequest request = new YoutubeDLRequest(videoUrl);
                 request.addOption("-o", targetFile.getAbsolutePath());
                 request.addOption("-f", formatSelector);
                 request.addOption("--no-playlist");
+                request.addOption("--no-mtime");
+                request.addOption("--no-update");
+                request.addOption("--no-warnings");
+                request.addOption("--no-check-certificates");
+                request.addOption("--geo-bypass");
+                request.addOption("--extractor-args", "youtube:player_client=android");
+                String cookiesFilePath = call.getString("cookiesFilePath");
+                if (cookiesFilePath != null && !cookiesFilePath.isEmpty()) {
+                    File cookiesFile = new File(cookiesFilePath);
+                    if (cookiesFile.exists()) {
+                        request.addOption("--cookies", cookiesFile.getAbsolutePath());
+                        sendLog("info", "Using cookies file: " + cookiesFile.getAbsolutePath());
+                    } else {
+                        sendLog("warn", "cookiesFilePath provided but file not found: " + cookiesFilePath);
+                    }
+                }
+                request.addOption("--user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36");
 
                 YoutubeDL.getInstance().execute(request, finalDownloadId, (Float progress, Long etaInSeconds, String line) -> {
                     Boolean isActive = activeDownloads.get(finalDownloadId);
@@ -168,7 +206,7 @@ public class YtDlpPlugin extends Plugin {
                         progressObj.put("downloadId", finalDownloadId);
                         progressObj.put("progress", (int) (float) progress);
                         progressObj.put("speed", "Downloading");
-                        progressObj.put("eta", etaInSeconds + "s");
+                        progressObj.put("eta", etaInSeconds != null && etaInSeconds >= 0 ? etaInSeconds + "s" : "Calculating...");
                         progressObj.put("status", "downloading");
                         progressObj.put("filePath", targetFile.getAbsolutePath());
                         notifyListeners("downloadProgress", progressObj);

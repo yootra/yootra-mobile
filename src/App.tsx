@@ -7,6 +7,7 @@ import { DownloadsHistory } from './components/DownloadsHistory';
 import { SettingsView } from './components/SettingsView';
 import { BottomNav } from './components/BottomNav';
 import { CreatorSupportBottomSheet } from './components/CreatorSupportBottomSheet';
+import { VpnRequiredModal } from './components/VpnRequiredModal';
 import type { VideoInfo, VideoFormat, DownloadItem, AppSettings } from './types/ytdl';
 import { YtDlpService } from './services/ytdlpService';
 import { NotificationService } from './services/notificationService';
@@ -24,6 +25,7 @@ export const App: React.FC = () => {
 
   const [selectedFormatToDownload, setSelectedFormatToDownload] = useState<VideoFormat | null>(null);
   const [isBottomSheetOpen, setIsBottomSheetOpen] = useState<boolean>(false);
+  const [isVpnModalOpen, setIsVpnModalOpen] = useState<boolean>(false);
 
   const [downloads, setDownloads] = useState<DownloadItem[]>(() => {
     const saved = localStorage.getItem('yt_downloads_history');
@@ -93,8 +95,9 @@ export const App: React.FC = () => {
       const info = await YtDlpService.fetchVideoInfo(url);
       setVideoInfo(info);
       setCurrentView('preview');
-    } catch {
+    } catch (err: any) {
       showToast('Error fetching video details.');
+      setIsVpnModalOpen(true);
     } finally {
       setIsFetchingInfo(false);
     }
@@ -148,12 +151,16 @@ export const App: React.FC = () => {
           setDownloads((prev) =>
             prev.map((item) => {
               if (item.id === downloadId) {
+                const nextStatus = status === 'completed' || status === 'error' || status === 'cancelled'
+                  ? (status as DownloadItem['status'])
+                  : item.status;
+
                 return {
                   ...item,
                   progress,
-                  speed,
+                  speed: speed || item.speed,
                   eta: sanitizeEta(eta, i18n.language),
-                  status: (status as DownloadItem['status']) || item.status,
+                  status: nextStatus,
                   filePath: path || item.filePath,
                   errorMsg: errorMsg || item.errorMsg
                 };
@@ -179,7 +186,7 @@ export const App: React.FC = () => {
         format.ext,
         readableSize
       );
-    } catch {
+    } catch (err: any) {
       setDownloads((prev) =>
         prev.map((item) =>
           item.id === downloadId
@@ -187,6 +194,7 @@ export const App: React.FC = () => {
             : item
         )
       );
+      setIsVpnModalOpen(true);
     }
   };
 
@@ -221,7 +229,16 @@ export const App: React.FC = () => {
                 recentDownloads={downloads}
                 onOpenSettings={() => setActiveTab('settings')}
                 onViewAllDownloads={() => setActiveTab('downloads')}
-                onSelectRecent={() => setActiveTab('downloads')}
+                onSelectRecent={(item) => {
+                  if (item.status === 'downloading') {
+                    setCurrentView('downloading');
+                  } else {
+                    setActiveTab('downloads');
+                  }
+                }}
+                onOpenActiveDownloading={() => {
+                  setCurrentView('downloading');
+                }}
               />
             )}
 
@@ -234,9 +251,22 @@ export const App: React.FC = () => {
               />
             )}
 
-            {currentView === 'downloading' && activeDownload && (
+            {currentView === 'downloading' && (
               <DownloadingView
-                item={activeDownload}
+                item={activeDownload || downloads[0] || {
+                  id: 'demo',
+                  url: '',
+                  title: videoInfo?.title || 'YouTube Video',
+                  thumbnail: videoInfo?.thumbnail || '',
+                  formatId: '720p',
+                  qualityLabel: '720p (HD)',
+                  ext: 'mp4',
+                  progress: 0,
+                  speed: '0 MB/s',
+                  eta: sanitizeEta('-1', i18n.language),
+                  status: 'downloading',
+                  timestamp: Date.now()
+                }}
                 onBack={() => setCurrentView('home')}
                 onCancel={handleCancelDownload}
               />
@@ -251,6 +281,10 @@ export const App: React.FC = () => {
             onOpenHomeUrlInput={() => {
               setActiveTab('home');
               setCurrentView('home');
+            }}
+            onOpenDownloading={() => {
+              setActiveTab('home');
+              setCurrentView('downloading');
             }}
           />
         )}
@@ -270,13 +304,15 @@ export const App: React.FC = () => {
         onCancel={() => setIsBottomSheetOpen(false)}
       />
 
+      <VpnRequiredModal
+        isOpen={isVpnModalOpen}
+        onClose={() => setIsVpnModalOpen(false)}
+      />
+
       <BottomNav
         activeTab={activeTab}
         setActiveTab={(tab) => {
           setActiveTab(tab);
-          if (tab === 'home' && currentView === 'downloading') {
-            setCurrentView('home');
-          }
         }}
       />
     </div>

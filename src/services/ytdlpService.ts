@@ -1,4 +1,4 @@
-import { registerPlugin } from '@capacitor/core';
+import { registerPlugin, Capacitor } from '@capacitor/core';
 import type { VideoInfo, VideoFormat } from '../types/ytdl';
 import { logger } from './loggerService';
 
@@ -33,7 +33,10 @@ export class YtDlpService {
         return result.info;
       }
     } catch (err: any) {
-      logger.addLog('warn', `Native video info fetch error: ${err?.message || err}. Falling back.`);
+      logger.addLog('warn', `Native video info fetch error: ${err?.message || err}`);
+      if (Capacitor.isNativePlatform()) {
+        throw new Error(err?.message || 'Native fetch failed');
+      }
       return this.mockVideoInfo(url);
     }
     return this.mockVideoInfo(url);
@@ -78,7 +81,10 @@ export class YtDlpService {
         logger.addLog('info', `Native downloadVideo initialized. Target path: ${result.filePath}`);
       });
     } catch (err: any) {
-      logger.addLog('warn', `Native download engine unavailable or failed: ${err?.message || err}. Running web simulation.`);
+      logger.addLog('warn', `Native download engine unavailable or failed: ${err?.message || err}`);
+      if (Capacitor.isNativePlatform()) {
+        throw new Error(err?.message || 'Native download failed');
+      }
       return this.simulateBrowserDownload(title, downloadLocation, onProgress);
     }
   }

@@ -1,6 +1,6 @@
 {
   "app": {
-    "title": "YouTube Downloader"
+    "title": "Yootra"
   },
   "nav": {
     "home": "Home",
@@ -56,8 +56,8 @@
     "shareApp": "Share this app",
     "version": "Version"
   },
-  "bottomSheet": {
-    "title": "Support Content Creators 💛",
+  "creatorSupport": {
+    "title": "Support Content Creators",
     "message": "Content creators spend a lot of time and effort producing these videos. To support their channels and encourage continued creation, please try to watch the video at least once on YouTube and refrain from public redistribution of downloaded files.",
     "confirm": "I Understand & Download",
     "cancel": "Cancel"
@@ -66,5 +66,10 @@
     "completed": "Completed",
     "failed": "Failed",
     "cancelled": "Cancelled"
+  },
+  "vpnModal": {
+    "title": "VPN or IP Change Required",
+    "description": "YouTube has blocked your request due to anti-bot policies. Please enable a VPN or change your server and try again.",
+    "confirm": "Got it"
   }
 }

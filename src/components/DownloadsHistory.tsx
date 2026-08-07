@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Search, MoreVertical, Folder, Share2, Trash2, CheckCircle2, Plus, Play, Music, Film } from 'lucide-react';
+import { Search, MoreVertical, Folder, Share2, Trash2, CheckCircle2, Plus, Play, Music, Film, Loader2, AlertCircle, XCircle } from 'lucide-react';
 import { Share } from '@capacitor/share';
 import { Capacitor } from '@capacitor/core';
 import type { DownloadItem } from '../types/ytdl';
@@ -10,12 +10,14 @@ interface DownloadsHistoryProps {
   downloads: DownloadItem[];
   onDelete: (id: string) => void;
   onOpenHomeUrlInput?: () => void;
+  onOpenDownloading?: () => void;
 }
 
 export const DownloadsHistory: React.FC<DownloadsHistoryProps> = ({
   downloads,
   onDelete,
-  onOpenHomeUrlInput
+  onOpenHomeUrlInput,
+  onOpenDownloading
 }) => {
   const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState('');
@@ -65,12 +67,6 @@ export const DownloadsHistory: React.FC<DownloadsHistoryProps> = ({
         <h1 className="text-2xl font-bold text-base-content tracking-tight">
           {t('downloads.title')}
         </h1>
-        <button
-          type="button"
-          className="btn btn-circle btn-ghost text-base-content/60"
-        >
-          <MoreVertical className="w-5 h-5" />
-        </button>
       </div>
 
       <div className="relative">
@@ -118,7 +114,14 @@ export const DownloadsHistory: React.FC<DownloadsHistoryProps> = ({
           {filtered.map((item) => (
             <div
               key={item.id}
-              className="bg-base-200/60 border border-base-300 rounded-2xl p-3.5 space-y-3 shadow-xs"
+              onClick={() => {
+                if (item.status === 'downloading' && onOpenDownloading) {
+                  onOpenDownloading();
+                }
+              }}
+              className={`bg-base-200/60 border border-base-300 rounded-2xl p-3.5 space-y-3 shadow-xs ${
+                item.status === 'downloading' ? 'cursor-pointer hover:border-[#ba2c2c]' : ''
+              }`}
             >
               <div className="flex items-start gap-3">
                 <div className="relative w-24 h-16 rounded-xl overflow-hidden bg-base-300 shrink-0">
@@ -127,13 +130,15 @@ export const DownloadsHistory: React.FC<DownloadsHistoryProps> = ({
                     alt={item.title}
                     className="w-full h-full object-cover"
                   />
-                  <button
-                    type="button"
-                    onClick={() => setSelectedItem(item)}
-                    className="absolute inset-0 bg-black/40 flex items-center justify-center text-white opacity-90 hover:opacity-100 transition"
-                  >
-                    <Play className="w-6 h-6 fill-white stroke-none" />
-                  </button>
+                  {item.status === 'completed' && (
+                    <button
+                      type="button"
+                      onClick={() => setSelectedItem(item)}
+                      className="absolute inset-0 bg-black/40 flex items-center justify-center text-white opacity-90 hover:opacity-100 transition"
+                    >
+                      <Play className="w-6 h-6 fill-white stroke-none" />
+                    </button>
+                  )}
                   {item.durationFormatted && (
                     <div className="absolute bottom-1 right-1 bg-black/80 text-white text-[9px] font-semibold px-1 py-0.5 rounded font-mono">
                       {item.durationFormatted || formatDuration(item.duration)}
@@ -146,15 +151,52 @@ export const DownloadsHistory: React.FC<DownloadsHistoryProps> = ({
                     <h3 className="font-semibold text-xs text-base-content line-clamp-2 leading-snug">
                       {item.title}
                     </h3>
-                    <div className="w-5 h-5 rounded-full bg-emerald-100 dark:bg-emerald-950/80 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
-                      <CheckCircle2 className="w-3.5 h-3.5" />
-                    </div>
+
+                    {item.status === 'completed' && (
+                      <div className="w-5 h-5 rounded-full bg-emerald-100 dark:bg-emerald-950/80 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+                        <CheckCircle2 className="w-3.5 h-3.5" />
+                      </div>
+                    )}
+
+                    {item.status === 'downloading' && (
+                      <div className="w-5 h-5 rounded-full bg-blue-100 dark:bg-blue-950/80 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      </div>
+                    )}
+
+                    {item.status === 'error' && (
+                      <div className="w-5 h-5 rounded-full bg-red-100 dark:bg-red-950/80 text-red-600 dark:text-red-400 flex items-center justify-center shrink-0">
+                        <AlertCircle className="w-3.5 h-3.5" />
+                      </div>
+                    )}
+
+                    {item.status === 'cancelled' && (
+                      <div className="w-5 h-5 rounded-full bg-base-300 text-base-content/60 flex items-center justify-center shrink-0">
+                        <XCircle className="w-3.5 h-3.5" />
+                      </div>
+                    )}
                   </div>
+
                   <div className="text-[11px] text-base-content/60 flex items-center gap-1.5 font-mono">
                     <span>{item.qualityLabel}</span>
                     <span>•</span>
                     <span>{formatFileSize(item.fileSize, item.qualityLabel, item.duration || 180)}</span>
                   </div>
+
+                  {item.status === 'downloading' && (
+                    <div className="space-y-1 pt-1">
+                      <div className="w-full bg-base-300 h-1.5 rounded-full overflow-hidden">
+                        <div
+                          className="bg-[#ba2c2c] h-full transition-all duration-300"
+                          style={{ width: `${Math.min(Math.max(item.progress || 0, 0), 100)}%` }}
+                        ></div>
+                      </div>
+                      <div className="text-[10px] text-base-content/60 font-mono flex items-center justify-between">
+                        <span>{t('downloading.title')}... {item.progress}%</span>
+                        <span>{item.speed}</span>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
 

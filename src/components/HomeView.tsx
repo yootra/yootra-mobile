@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Settings, Clipboard, Download, MoreVertical, CheckCircle2 } from 'lucide-react';
+import { Settings, Clipboard, Download, MoreVertical, CheckCircle2, AlertCircle, XCircle, Loader2 } from 'lucide-react';
 import { Clipboard as CapClipboard } from '@capacitor/clipboard';
 import type { DownloadItem } from '../types/ytdl';
-import { formatDuration, formatFileSize } from '../utils/formatters';
+import { formatDuration, formatFileSize, sanitizeEta } from '../utils/formatters';
 
 interface HomeViewProps {
   onFetchInfo: (url: string) => void;
@@ -12,6 +12,7 @@ interface HomeViewProps {
   onOpenSettings: () => void;
   onViewAllDownloads: () => void;
   onSelectRecent: (item: DownloadItem) => void;
+  onOpenActiveDownloading?: () => void;
 }
 
 export const HomeView: React.FC<HomeViewProps> = ({
@@ -20,10 +21,13 @@ export const HomeView: React.FC<HomeViewProps> = ({
   recentDownloads,
   onOpenSettings,
   onViewAllDownloads,
-  onSelectRecent
+  onSelectRecent,
+  onOpenActiveDownloading
 }) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [urlInput, setUrlInput] = useState('');
+
+  const activeDownload = recentDownloads.find((d) => d.status === 'downloading');
 
   const handlePaste = async () => {
     try {
@@ -59,13 +63,6 @@ export const HomeView: React.FC<HomeViewProps> = ({
             {t('home.subtitle')}
           </p>
         </div>
-        <button
-          type="button"
-          onClick={onOpenSettings}
-          className="btn btn-circle btn-ghost text-base-content/70 hover:text-base-content"
-        >
-          <Settings className="w-6 h-6" />
-        </button>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-3">
@@ -108,6 +105,46 @@ export const HomeView: React.FC<HomeViewProps> = ({
           )}
         </button>
       </form>
+
+      {activeDownload && (
+        <div
+          onClick={onOpenActiveDownloading}
+          className="bg-base-200/80 border border-[#ba2c2c]/40 rounded-2xl p-4 space-y-3 cursor-pointer hover:border-[#ba2c2c] transition shadow-xs"
+        >
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold text-[#ba2c2c] flex items-center gap-1.5">
+              <Loader2 className="w-4 h-4 animate-spin" />
+              {t('downloading.title')} ({activeDownload.progress || 0}%)
+            </span>
+            <span className="text-xs font-mono text-base-content/60">
+              {sanitizeEta(activeDownload.eta, i18n.language)}
+            </span>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <img
+              src={activeDownload.thumbnail}
+              alt={activeDownload.title}
+              className="w-16 h-12 rounded-xl object-cover bg-base-300 shrink-0"
+            />
+            <div className="flex-1 min-w-0">
+              <h3 className="font-semibold text-xs text-base-content truncate">
+                {activeDownload.title}
+              </h3>
+              <div className="text-[11px] text-base-content/60 font-mono mt-0.5">
+                {activeDownload.qualityLabel} • {activeDownload.speed || '0 MB/s'}
+              </div>
+            </div>
+          </div>
+
+          <div className="w-full bg-base-300 h-2 rounded-full overflow-hidden">
+            <div
+              className="bg-[#ba2c2c] h-full transition-all duration-300"
+              style={{ width: `${Math.min(Math.max(activeDownload.progress || 0, 0), 100)}%` }}
+            ></div>
+          </div>
+        </div>
+      )}
 
       <div className="space-y-3 pt-2">
         <div className="flex items-center justify-between">
@@ -157,10 +194,34 @@ export const HomeView: React.FC<HomeViewProps> = ({
                     <span>•</span>
                     <span>{formatFileSize(item.fileSize, item.qualityLabel, item.duration || 180)}</span>
                   </div>
-                  <div className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-950/60 px-2 py-0.5 rounded-full">
-                    <CheckCircle2 className="w-3 h-3" />
-                    {t('status.completed')}
-                  </div>
+
+                  {item.status === 'completed' && (
+                    <div className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-950/60 px-2 py-0.5 rounded-full">
+                      <CheckCircle2 className="w-3 h-3" />
+                      {t('status.completed')}
+                    </div>
+                  )}
+
+                  {item.status === 'downloading' && (
+                    <div className="inline-flex items-center gap-1 text-[10px] font-bold text-blue-600 dark:text-blue-400 bg-blue-100 dark:bg-blue-950/60 px-2 py-0.5 rounded-full">
+                      <Loader2 className="w-3 h-3 animate-spin" />
+                      {t('downloading.title')} ({item.progress}%)
+                    </div>
+                  )}
+
+                  {item.status === 'error' && (
+                    <div className="inline-flex items-center gap-1 text-[10px] font-bold text-red-600 dark:text-red-400 bg-red-100 dark:bg-red-950/60 px-2 py-0.5 rounded-full">
+                      <AlertCircle className="w-3 h-3" />
+                      {t('status.failed')}
+                    </div>
+                  )}
+
+                  {item.status === 'cancelled' && (
+                    <div className="inline-flex items-center gap-1 text-[10px] font-bold text-base-content/60 bg-base-300 px-2 py-0.5 rounded-full">
+                      <XCircle className="w-3 h-3" />
+                      {t('status.cancelled')}
+                    </div>
+                  )}
                 </div>
 
                 <button
