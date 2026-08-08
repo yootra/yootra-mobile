@@ -44,7 +44,7 @@ export const CreatorSupportBottomSheet: React.FC<CreatorSupportBottomSheetProps>
         <button
           type="button"
           onClick={onConfirm}
-          className="w-full btn rounded-xl bg-[#ba2c2c] hover:bg-[#a02424] btn-md text-white font-bold border-none shadow-md"
+          className="w-full btn rounded-xl btn-primary btn-md text-white font-bold border-none shadow-md"
         >
           <CheckCircle className="w-5 h-5" />
           {t('creatorSupport.confirm')}

@@ -1,6 +1,6 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { ArrowLeft, ArrowRight, MoreVertical, Pause, X } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Pause, X } from 'lucide-react';
 import type { DownloadItem } from '../types/ytdl';
 import { formatFileSize, parseFileSizeInBytes, sanitizeEta } from '../utils/formatters';
 
@@ -61,7 +61,7 @@ export const DownloadingView: React.FC<DownloadingViewProps> = ({
               cx="80"
               cy="80"
               r="70"
-              className="stroke-[#ba2c2c] transition-all duration-300 ease-out"
+              className="stroke-primary transition-all duration-300 ease-out"
               strokeWidth="10"
               strokeDasharray="440"
               strokeDashoffset={strokeDashoffset}
@@ -156,7 +156,7 @@ export const DownloadingView: React.FC<DownloadingViewProps> = ({
           <div className="space-y-1">
             <div className="w-full bg-base-300 h-2 rounded-full overflow-hidden">
               <div
-                className="bg-[#ba2c2c] h-full transition-all duration-300"
+                className="bg-primary h-full transition-all duration-300"
                 style={{ width: `${progress}%` }}
               ></div>
             </div>

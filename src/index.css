@@ -1,5 +1,12 @@
 @import "tailwindcss";
-@plugin "daisyui";
+
+@plugin "daisyui" {
+  themes: light, dark, dim, synthwave;
+}
+
+@theme {
+  --color-primary: #ba2c2c;
+}
 
 :root {
   --safe-top: env(safe-area-inset-top, 0px);
@@ -15,7 +22,8 @@ body {
   padding: 0;
 }
 
-[dir="ltr"] body, [dir="ltr"] {
+[dir="ltr"] body,
+[dir="ltr"] {
   font-family: 'Inter', 'Vazirmatn', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 

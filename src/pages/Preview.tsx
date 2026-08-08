@@ -86,7 +86,7 @@ export const VideoPreviewView: React.FC<VideoPreviewViewProps> = ({
                 onClick={() => setSelectedFormatId(fmt.formatId)}
                 className={`flex items-center justify-between p-3.5 rounded-2xl border cursor-pointer transition ${
                   isSelected
-                    ? 'bg-base-200 border-[#ba2c2c] shadow-xs'
+                    ? 'bg-base-200 border-primary shadow-xs'
                     : 'bg-base-200/40 border-base-300 hover:border-base-300'
                 }`}
               >
@@ -97,7 +97,7 @@ export const VideoPreviewView: React.FC<VideoPreviewViewProps> = ({
                       name="quality"
                       checked={isSelected}
                       onChange={() => setSelectedFormatId(fmt.formatId)}
-                      className="radio radio-primary border-2 checked:border-[#ba2c2c] checked:bg-[#ba2c2c]"
+                      className="radio radio-primary border-2"
                     />
                   </div>
 
@@ -126,7 +126,7 @@ export const VideoPreviewView: React.FC<VideoPreviewViewProps> = ({
         type="button"
         disabled={isDownloading}
         onClick={() => onRequestDownload(selectedFormat)}
-        className="w-full btn bg-[#ba2c2c] hover:bg-[#a02424] text-white font-bold py-3.5 rounded-2xl border-none shadow-lg flex items-center justify-center gap-2 text-base disabled:opacity-50 mt-4"
+        className="w-full btn btn-primary py-3.5 rounded-2xl border-none shadow-lg flex items-center justify-center gap-2 text-base disabled:opacity-50 mt-4"
       >
         {isDownloading ? (
           <>

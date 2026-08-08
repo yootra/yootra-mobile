@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Settings, Clipboard, Download, MoreVertical, CheckCircle2, AlertCircle, XCircle, Loader2 } from 'lucide-react';
+import { Clipboard, Download, MoreVertical, CheckCircle2, AlertCircle, XCircle, Loader2 } from 'lucide-react';
 import { Clipboard as CapClipboard } from '@capacitor/clipboard';
 import type { DownloadItem } from '../types/ytdl';
 import { formatDuration, formatFileSize, sanitizeEta } from '../utils/formatters';
@@ -9,7 +9,6 @@ interface HomeViewProps {
   onFetchInfo: (url: string) => void;
   isLoading: boolean;
   recentDownloads: DownloadItem[];
-  onOpenSettings: () => void;
   onViewAllDownloads: () => void;
   onSelectRecent: (item: DownloadItem) => void;
   onOpenActiveDownloading?: () => void;
@@ -19,7 +18,6 @@ export const HomeView: React.FC<HomeViewProps> = ({
   onFetchInfo,
   isLoading,
   recentDownloads,
-  onOpenSettings,
   onViewAllDownloads,
   onSelectRecent,
   onOpenActiveDownloading
@@ -75,7 +73,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
             value={urlInput}
             onChange={(e) => setUrlInput(e.target.value)}
             placeholder={t('home.placeholder')}
-            className="w-full bg-base-200 border border-base-300 rounded-2xl py-3.5 pl-12 pr-12 text-sm text-base-content placeholder-base-content/40 focus:outline-none focus:border-[#ba2c2c] rtl:pr-12 rtl:pl-12 transition shadow-xs"
+            className="w-full bg-base-200 border border-base-300 rounded-2xl py-3.5 pl-12 pr-12 text-sm text-base-content placeholder-base-content/40 focus:outline-none focus:border-primary rtl:pr-12 rtl:pl-12 transition shadow-xs"
             required
           />
           <button
@@ -90,7 +88,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
         <button
           type="submit"
           disabled={isLoading || !urlInput.trim()}
-          className="w-full btn bg-[#ba2c2c] hover:bg-[#a02424] text-white font-bold py-3.5 rounded-2xl border-none shadow-md flex items-center justify-center gap-2 text-base disabled:opacity-50"
+          className="w-full btn btn-primary py-3.5 rounded-2xl border-none shadow-md flex items-center justify-center gap-2 text-base disabled:opacity-50"
         >
           {isLoading ? (
             <>
@@ -109,10 +107,10 @@ export const HomeView: React.FC<HomeViewProps> = ({
       {activeDownload && (
         <div
           onClick={onOpenActiveDownloading}
-          className="bg-base-200/80 border border-[#ba2c2c]/40 rounded-2xl p-4 space-y-3 cursor-pointer hover:border-[#ba2c2c] transition shadow-xs"
+          className="bg-base-200/80 border border-primary/40 rounded-2xl p-4 space-y-3 cursor-pointer hover:border-primary transition shadow-xs"
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-[#ba2c2c] flex items-center gap-1.5">
+            <span className="text-xs font-bold text-primary flex items-center gap-1.5">
               <Loader2 className="w-4 h-4 animate-spin" />
               {t('downloading.title')} ({activeDownload.progress || 0}%)
             </span>
@@ -139,7 +137,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
 
           <div className="w-full bg-base-300 h-2 rounded-full overflow-hidden">
             <div
-              className="bg-[#ba2c2c] h-full transition-all duration-300"
+              className="bg-primary h-full transition-all duration-300"
               style={{ width: `${Math.min(Math.max(activeDownload.progress || 0, 0), 100)}%` }}
             ></div>
           </div>
@@ -154,7 +152,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
           <button
             type="button"
             onClick={onViewAllDownloads}
-            className="text-xs font-semibold text-[#ba2c2c] hover:underline"
+            className="text-xs font-semibold text-primary hover:underline"
           >
             {t('home.viewAll')}
           </button>

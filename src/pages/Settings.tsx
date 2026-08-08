@@ -45,7 +45,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
       </div>
 
       <div className="space-y-3">
-        <h2 className="text-xs font-bold text-[#ba2c2c] uppercase tracking-wider px-1">
+        <h2 className="text-xs font-bold text-primary uppercase tracking-wider px-1">
           {t('settings.general')}
         </h2>
 
@@ -110,7 +110,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                   <button
                     type="button"
                     onClick={handleSaveCustomPath}
-                    className="btn btn-sm bg-[#ba2c2c] hover:bg-[#a02424] text-white border-none shrink-0"
+                    className="btn btn-sm btn-primary shrink-0"
                   >
                     <Check className="w-4 h-4" />
                   </button>
@@ -185,7 +185,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
             <input
               type="checkbox"
               defaultChecked
-              className="toggle toggle-primary checked:bg-[#ba2c2c] checked:border-[#ba2c2c]"
+              className="toggle toggle-primary"
             />
           </div>
 
@@ -204,7 +204,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
             <input
               type="checkbox"
               defaultChecked
-              className="toggle toggle-primary checked:bg-[#ba2c2c] checked:border-[#ba2c2c]"
+              className="toggle toggle-primary"
             />
           </div>
 
@@ -235,7 +235,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
       </div>
 
       <div className="space-y-3">
-        <h2 className="text-xs font-bold text-[#ba2c2c] uppercase tracking-wider px-1">
+        <h2 className="text-xs font-bold text-primary uppercase tracking-wider px-1">
           {t('settings.about')}
         </h2>
 

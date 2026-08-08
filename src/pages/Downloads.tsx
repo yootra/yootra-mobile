@@ -75,7 +75,7 @@ export const DownloadsHistory: React.FC<DownloadsHistoryProps> = ({
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           placeholder={t('downloads.searchPlaceholder')}
-          className="w-full bg-base-200 border border-base-300 rounded-2xl py-3 pl-10 pr-4 text-sm text-base-content placeholder-base-content/40 focus:outline-none focus:border-[#ba2c2c] rtl:pr-10 rtl:pl-4 transition shadow-xs"
+          className="w-full bg-base-200 border border-base-300 rounded-2xl py-3 pl-10 pr-4 text-sm text-base-content placeholder-base-content/40 focus:outline-none focus:border-primary rtl:pr-10 rtl:pl-4 transition shadow-xs"
         />
         <Search className="w-4 h-4 text-base-content/40 absolute left-3.5 top-3.5 rtl:right-3.5 rtl:left-auto" />
       </div>
@@ -90,7 +90,7 @@ export const DownloadsHistory: React.FC<DownloadsHistoryProps> = ({
               onClick={() => setActiveFilter(filter)}
               className={`px-4 py-1.5 rounded-full font-semibold capitalize whitespace-nowrap transition ${
                 isActive
-                  ? 'bg-[#ba2c2c] text-white shadow-xs'
+                  ? 'bg-primary text-primary-content shadow-xs'
                   : 'bg-base-200 text-base-content/70 hover:bg-base-300'
               }`}
             >
@@ -120,7 +120,7 @@ export const DownloadsHistory: React.FC<DownloadsHistoryProps> = ({
                 }
               }}
               className={`bg-base-200/60 border border-base-300 rounded-2xl p-3.5 space-y-3 shadow-xs ${
-                item.status === 'downloading' ? 'cursor-pointer hover:border-[#ba2c2c]' : ''
+                item.status === 'downloading' ? 'cursor-pointer hover:border-primary' : ''
               }`}
             >
               <div className="flex items-start gap-3">
@@ -187,7 +187,7 @@ export const DownloadsHistory: React.FC<DownloadsHistoryProps> = ({
                     <div className="space-y-1 pt-1">
                       <div className="w-full bg-base-300 h-1.5 rounded-full overflow-hidden">
                         <div
-                          className="bg-[#ba2c2c] h-full transition-all duration-300"
+                          className="bg-primary h-full transition-all duration-300"
                           style={{ width: `${Math.min(Math.max(item.progress || 0, 0), 100)}%` }}
                         ></div>
                       </div>
@@ -247,7 +247,7 @@ export const DownloadsHistory: React.FC<DownloadsHistoryProps> = ({
         <button
           type="button"
           onClick={onOpenHomeUrlInput}
-          className="fixed bottom-20 right-5 z-40 btn btn-circle bg-[#ba2c2c] hover:bg-[#a02424] text-white border-none shadow-xl"
+          className="fixed bottom-20 right-5 z-40 btn btn-circle btn-primary shadow-xl"
         >
           <Plus className="w-6 h-6" />
         </button>

@@ -7,53 +7,56 @@ interface BottomNavProps {
   setActiveTab: (tab: string) => void;
 }
 
+const navItems = [
+  { id: 'downloads', icon: Download, label: 'nav.downloads' },
+  { id: 'home', icon: Home, label: 'nav.home' },
+  { id: 'settings', icon: Settings, label: 'nav.settings' }
+];
 export const BottomNav: React.FC<BottomNavProps> = ({
   activeTab,
   setActiveTab
 }) => {
   const { t } = useTranslation();
 
+
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-40 bg-base-100/95 backdrop-blur-md border-t border-base-300 safe-bottom shadow-lg">
-      <div className="flex items-center justify-around max-w-lg mx-auto h-16 px-4">
-        <button
-          type="button"
-          onClick={() => setActiveTab('downloads')}
-          className={`flex flex-col items-center justify-center w-full h-full space-y-1 transition ${
-            activeTab === 'downloads'
-              ? 'text-[#ba2c2c] font-bold'
-              : 'text-base-content/60 hover:text-base-content'
-          }`}
-        >
-          <Download className={`w-6 h-6 ${activeTab === 'downloads' ? 'stroke-[2.5]' : 'stroke-[1.8]'}`} />
-          <span className="text-[11px] tracking-tight">{t('nav.downloads')}</span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() => setActiveTab('home')}
-          className={`flex flex-col items-center justify-center w-full h-full space-y-1 transition ${
-            activeTab === 'home'
-              ? 'text-[#ba2c2c] font-bold'
-              : 'text-base-content/60 hover:text-base-content'
-          }`}
-        >
-          <Home className={`w-6 h-6 ${activeTab === 'home' ? 'stroke-[2.5]' : 'stroke-[1.8]'}`} />
-          <span className="text-[11px] tracking-tight">{t('nav.home')}</span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() => setActiveTab('settings')}
-          className={`flex flex-col items-center justify-center w-full h-full space-y-1 transition ${
-            activeTab === 'settings'
-              ? 'text-[#ba2c2c] font-bold'
-              : 'text-base-content/60 hover:text-base-content'
-          }`}
-        >
-          <Settings className={`w-6 h-6 ${activeTab === 'settings' ? 'stroke-[2.5]' : 'stroke-[1.8]'}`} />
-          <span className="text-[11px] tracking-tight">{t('nav.settings')}</span>
-        </button>
+    <nav className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 w-full max-w-[340px] px-4 pointer-events-none">
+      <div className="flex items-center justify-between p-2 bg-base-100/80 backdrop-blur-2xl border border-base-200/50 shadow-[0_8px_30px_rgb(0,0,0,0.12)] rounded-[32px] pointer-events-auto">
+        {navItems.map((item) => {
+          const isActive = activeTab === item.id;
+          const Icon = item.icon;
+          
+          return (
+            <button
+              key={item.id}
+              onClick={() => setActiveTab(item.id)}
+              className={`
+                relative flex items-center justify-center gap-2 h-12 rounded-full transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)]
+                ${isActive 
+                  ? 'bg-base-content text-base-100 px-6 shadow-md' 
+                  : 'bg-transparent text-base-content/50 hover:text-base-content hover:bg-base-200/50 px-4'
+                }
+              `}
+            >
+              <Icon 
+                className={`
+                  w-5 h-5 transition-all duration-500
+                  ${isActive ? 'stroke-[2.5] scale-110' : 'stroke-[2] scale-100'}
+                `} 
+              />
+              <div 
+                className={`
+                  grid transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)]
+                  ${isActive ? 'grid-cols-[1fr] opacity-100' : 'grid-cols-[0fr] opacity-0'}
+                `}
+              >
+                <span className="overflow-hidden text-[13px] font-bold tracking-wide whitespace-nowrap">
+                  {t(item.label)}
+                </span>
+              </div>
+            </button>
+          );
+        })}
       </div>
     </nav>
   );
