@@ -85,13 +85,13 @@ jobs:
           RELEASE_VERSION: ${{ github.event.inputs.version || github.ref_name }}
           BUILD_TYPE: ${{ github.event.inputs.release_type || 'release' }}
         run: |
-          mkdir -p release-assets
+          mkdir -p "$GITHUB_WORKSPACE/release-assets"
           VERSION="${RELEASE_VERSION:-v1.0.0}"
           TYPE="${BUILD_TYPE}"
           cd android/app/build/outputs/apk/release
           for file in *.apk; do
             if [ -f "$file" ]; then
-              cp "$file" "../../../../../release-assets/yootra-mobile-${VERSION}-${TYPE}-${file}"
+              cp "$file" "$GITHUB_WORKSPACE/release-assets/yootra-mobile-${VERSION}-${TYPE}-${file}"
             fi
           done
 
