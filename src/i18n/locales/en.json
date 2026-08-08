@@ -53,15 +53,16 @@
     "backgroundDownloads": "Background downloads",
     "language": "Language",
     "about": "About",
-    "rateApp": "Rate this app",
-    "shareApp": "Share this app",
     "version": "Version",
     "systemLogs": "System Logs",
     "systemLogsSub": "View, clear and save log file",
     "changeLocation": "Change",
     "selectFolder": "Select default folder or custom path:",
     "customFolder": "Custom folder path...",
-    "locationSaved": "Download location saved."
+    "locationSaved": "Download location saved.",
+    "githubRepo": "GitHub Repository",
+    "donate": "Donate & Support",
+    "madeWithLove": "Made with tea and love ☕❤️"
   },
   "creatorSupport": {
     "title": "Support Content Creators",

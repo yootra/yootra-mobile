@@ -54,15 +54,16 @@
     "backgroundDownloads": "دانلود در پس‌زمینه",
     "language": "زبان",
     "about": "درباره برنامه",
-    "rateApp": "به برنامه امتیاز بده",
-    "shareApp": "برنامه رو به اشتراک بذار",
     "version": "نسخه",
     "systemLogs": "مشاهده لاگ‌های سیستم",
     "systemLogsSub": "نمایش، پاکسازی و ذخیره فایل لاگ",
     "changeLocation": "تغییر مسیر",
     "selectFolder": "انتخاب پوشه پیش‌فرض یا مسیر سفارشی:",
     "customFolder": "مسیر دلخواه...",
-    "locationSaved": "مسیر ذخیره‌سازی ذخیره شد."
+    "locationSaved": "مسیر ذخیره‌سازی ذخیره شد.",
+    "githubRepo": "مخزن گیت‌هاب",
+    "donate": "حمایت مالی (دونیت)",
+    "madeWithLove": "ساخته شده با چای و عشق ☕❤️"
   },
   "creatorSupport": {
     "title": "یه نکته درباره حمایت از سازنده‌ها",

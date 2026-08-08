@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Folder, Sliders, Moon, Bell, DownloadCloud, Globe, Star, Share2, Info, ChevronRight, ChevronLeft, Edit3, Check, Terminal } from 'lucide-react';
+import { Folder, Sliders, Moon, Bell, DownloadCloud, Globe, Info, ChevronRight, ChevronLeft, Edit3, Check, Terminal, Code2, Coffee, ExternalLink } from 'lucide-react';
 import type { AppSettings } from '../types/ytdl';
 import { Toast } from '@capacitor/toast';
 import { LogViewerModal } from '../components/LogViewerModal';
@@ -261,25 +261,35 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
         </h2>
 
         <div className="bg-base-200/60 border border-base-300 rounded-2xl divide-y divide-base-300/60 overflow-hidden shadow-xs">
-          <div className="p-4 flex items-center justify-between cursor-pointer hover:bg-base-200 transition">
+          <a
+            href="https://github.com/yootra/yootra-mobile"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="p-4 flex items-center justify-between cursor-pointer hover:bg-base-200 transition"
+          >
             <div className="flex items-center gap-3">
-              <Star className="w-5 h-5 text-base-content/60" />
+              <Code2 className="w-5 h-5 text-base-content/60" />
               <div className="text-sm font-semibold text-base-content">
-                {t('settings.rateApp')}
+                {t('settings.githubRepo')}
               </div>
             </div>
-            <ChevronIcon className="w-5 h-5 text-base-content/40" />
-          </div>
+            <ExternalLink className="w-4 h-4 text-base-content/40" />
+          </a>
 
-          <div className="p-4 flex items-center justify-between cursor-pointer hover:bg-base-200 transition">
+          <a
+            href="https://www.coffeete.ir/sajjadmrx"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="p-4 flex items-center justify-between cursor-pointer hover:bg-base-200 transition"
+          >
             <div className="flex items-center gap-3">
-              <Share2 className="w-5 h-5 text-base-content/60" />
+              <Coffee className="w-5 h-5 text-amber-500" />
               <div className="text-sm font-semibold text-base-content">
-                {t('settings.shareApp')}
+                {t('settings.donate')}
               </div>
             </div>
-            <ChevronIcon className="w-5 h-5 text-base-content/40" />
-          </div>
+            <ExternalLink className="w-4 h-4 text-base-content/40" />
+          </a>
 
           <div className="p-4 flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -292,6 +302,10 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
               1.0.0
             </span>
           </div>
+        </div>
+
+        <div className="py-6 text-center text-xs text-base-content/50 font-medium">
+          {t('settings.madeWithLove')}
         </div>
       </div>
     </div>
