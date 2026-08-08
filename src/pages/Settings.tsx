@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Folder, Sliders, Moon, Bell, DownloadCloud, Globe, Star, Share2, Info, ChevronRight, ChevronLeft, Edit3, Check } from 'lucide-react';
+import { Folder, Sliders, Moon, Bell, DownloadCloud, Globe, Star, Share2, Info, ChevronRight, ChevronLeft, Edit3, Check, Terminal } from 'lucide-react';
 import type { AppSettings } from '../types/ytdl';
 import { Toast } from '@capacitor/toast';
+import { LogViewerModal } from '../components/LogViewerModal';
 
 interface SettingsViewProps {
   settings: AppSettings;
@@ -21,6 +22,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
 
   const [isEditingFolder, setIsEditingFolder] = useState(false);
   const [customPathInput, setCustomPathInput] = useState(settings.downloadLocation || 'Movies');
+  const [isLogViewerOpen, setIsLogViewerOpen] = useState(false);
 
   const showToast = async (text: string) => {
     try {
@@ -32,7 +34,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
     if (customPathInput.trim()) {
       onUpdateSettings({ ...settings, downloadLocation: customPathInput.trim() });
       setIsEditingFolder(false);
-      showToast(isRtl ? 'مسیر ذخیره‌سازی ذخیره شد.' : 'Download location saved.');
+      showToast(t('settings.locationSaved'));
     }
   };
 
@@ -70,7 +72,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                 className="btn btn-xs btn-ghost gap-1 text-xs text-base-content/70 hover:text-base-content"
               >
                 <Edit3 className="w-3.5 h-3.5" />
-                {isRtl ? 'تغییر مسیر' : 'Change'}
+                {t('settings.changeLocation')}
               </button>
             </div>
 
@@ -78,7 +80,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
               <div className="pt-2 space-y-2.5 bg-base-300/40 p-3 rounded-xl">
                 <div className="space-y-1">
                   <label className="text-xs font-semibold text-base-content/70">
-                    {isRtl ? 'انتخاب پوشه پیش‌فرض یا مسیر سفارشی:' : 'Select default folder or custom path:'}
+                    {t('settings.selectFolder')}
                   </label>
                   <select
                     value={['Movies', 'Downloads', 'Music', 'DCIM'].includes(settings.downloadLocation) ? settings.downloadLocation : 'custom'}
@@ -87,7 +89,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                       if (val !== 'custom') {
                         setCustomPathInput(val);
                         onUpdateSettings({ ...settings, downloadLocation: val });
-                        showToast(isRtl ? `مسیر ذخیره‌سازی به ${val} تغییر یافت` : `Location set to ${val}`);
+                        showToast(t('settings.locationSaved'));
                       }
                     }}
                     className="select select-sm select-bordered w-full text-xs"
@@ -96,7 +98,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                     <option value="Downloads">Downloads (/storage/emulated/0/Download)</option>
                     <option value="Music">Music (/storage/emulated/0/Music)</option>
                     <option value="DCIM">DCIM (/storage/emulated/0/DCIM)</option>
-                    <option value="custom">{isRtl ? 'مسیر دلخواه...' : 'Custom folder path...'}</option>
+                    <option value="custom">{t('settings.customFolder')}</option>
                   </select>
                 </div>
 
@@ -232,6 +234,24 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
               {i18n.language === 'fa' ? 'English' : 'فارسی'}
             </button>
           </div>
+
+          <div
+            onClick={() => setIsLogViewerOpen(true)}
+            className="p-4 flex items-center justify-between cursor-pointer hover:bg-base-200 transition"
+          >
+            <div className="flex items-center gap-3">
+              <Terminal className="w-5 h-5 text-base-content/60" />
+              <div>
+                <div className="text-sm font-semibold text-base-content">
+                  {t('settings.systemLogs')}
+                </div>
+                <div className="text-xs text-base-content/50 mt-0.5">
+                  {t('settings.systemLogsSub')}
+                </div>
+              </div>
+            </div>
+            <ChevronIcon className="w-5 h-5 text-base-content/40" />
+          </div>
         </div>
       </div>
 
@@ -273,8 +293,13 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
             </span>
           </div>
         </div>
-        </div>
       </div>
+    </div>
+
+      <LogViewerModal
+        isOpen={isLogViewerOpen}
+        onClose={() => setIsLogViewerOpen(false)}
+      />
     </div>
   );
 };

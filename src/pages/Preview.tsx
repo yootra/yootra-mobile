@@ -68,7 +68,7 @@ export const VideoPreviewView: React.FC<VideoPreviewViewProps> = ({
         <div className="flex items-center gap-2 text-xs text-base-content/60">
           <span className="font-semibold">{videoInfo.uploader}</span>
           <span>•</span>
-          <span>{formatViewCount(videoInfo.viewCount, i18n.language)} {isRtl ? 'بازدید' : 'views'}</span>
+          <span>{formatViewCount(videoInfo.viewCount, i18n.language)} {t('preview.views')}</span>
         </div>
       </div>
 

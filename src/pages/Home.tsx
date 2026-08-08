@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Clipboard, Download, MoreVertical, CheckCircle2, AlertCircle, XCircle, Loader2 } from 'lucide-react';
 import { Clipboard as CapClipboard } from '@capacitor/clipboard';

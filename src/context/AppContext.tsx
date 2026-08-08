@@ -8,6 +8,28 @@ import { NotificationService } from '../services/notificationService';
 import { StatusBarService } from '../services/statusBarService';
 import { parseFileSizeInBytes, formatFileSize, sanitizeEta } from '../utils/formatters';
 
+export function isIpOrBotError(errorMsg?: string): boolean {
+  if (!errorMsg) return false;
+  const msg = errorMsg.toLowerCase();
+  return (
+    msg.includes('confirm you’re not a bot') ||
+    msg.includes("confirm you're not a bot") ||
+    msg.includes('bot') ||
+    msg.includes('cookies') ||
+    msg.includes('ip') ||
+    msg.includes('429') ||
+    msg.includes('403') ||
+    msg.includes('forbidden') ||
+    msg.includes('vpn')
+  );
+}
+
+interface GeneralErrorState {
+  isOpen: boolean;
+  errorMsg: string;
+  retryAction?: () => void;
+}
+
 interface AppContextType {
   videoInfo: VideoInfo | null;
   setVideoInfo: (info: VideoInfo | null) => void;
@@ -17,6 +39,13 @@ interface AppContextType {
   updateSettings: (settings: AppSettings) => void;
   isVpnModalOpen: boolean;
   setIsVpnModalOpen: (open: boolean) => void;
+  generalErrorModal: GeneralErrorState;
+  setGeneralErrorModal: React.Dispatch<React.SetStateAction<GeneralErrorState>>;
+  isLogViewerOpen: boolean;
+  setIsLogViewerOpen: (open: boolean) => void;
+  isOnboardingOpen: boolean;
+  setIsOnboardingOpen: (open: boolean) => void;
+  handleCompleteOnboarding: () => void;
   isBottomSheetOpen: boolean;
   setIsBottomSheetOpen: (open: boolean) => void;
   selectedFormatToDownload: VideoFormat | null;
@@ -29,21 +58,29 @@ interface AppContextType {
   activeDownload: DownloadItem | undefined;
   inputUrl: string;
   setInputUrl: (url: string) => void;
+  triggerErrorModal: (error: any, retryAction?: () => void) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const { i18n } = useTranslation();
-  // Using generic window routing since we can't safely use useNavigate outside RouterProvider in some setups,
-  // but wait, AppProvider will be inside RouterProvider if we want it to, OR we just use a callback.
-  // Actually, let's keep router out of AppContext to avoid circular deps. The components can handle navigation.
-  
+
   const [videoInfo, setVideoInfo] = useState<VideoInfo | null>(null);
   const [isFetchingInfo, setIsFetchingInfo] = useState<boolean>(false);
   const [selectedFormatToDownload, setSelectedFormatToDownload] = useState<VideoFormat | null>(null);
   const [isBottomSheetOpen, setIsBottomSheetOpen] = useState<boolean>(false);
   const [isVpnModalOpen, setIsVpnModalOpen] = useState<boolean>(false);
+  const [isOnboardingOpen, setIsOnboardingOpen] = useState<boolean>(() => {
+    return !localStorage.getItem('yt_app_onboarded');
+  });
+
+  const handleCompleteOnboarding = () => {
+    localStorage.setItem('yt_app_onboarded', 'true');
+    setIsOnboardingOpen(false);
+  };
+  const [generalErrorModal, setGeneralErrorModal] = useState<GeneralErrorState>({ isOpen: false, errorMsg: '' });
+  const [isLogViewerOpen, setIsLogViewerOpen] = useState<boolean>(false);
   const [inputUrl, setInputUrl] = useState<string>('');
 
   const [downloads, setDownloads] = useState<DownloadItem[]>(() => {
@@ -102,6 +139,19 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     catch { console.log(text); }
   };
 
+  const triggerErrorModal = (error: any, retryAction?: () => void) => {
+    const msg = typeof error === 'string' ? error : (error?.message || String(error));
+    if (isIpOrBotError(msg)) {
+      setIsVpnModalOpen(true);
+    } else {
+      setGeneralErrorModal({
+        isOpen: true,
+        errorMsg: msg,
+        retryAction
+      });
+    }
+  };
+
   const handleFetchInfo = async (url: string) => {
     setIsFetchingInfo(true);
     setVideoInfo(null);
@@ -111,7 +161,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       return Promise.resolve();
     } catch (err: any) {
       showToast('Error fetching video details.');
-      setIsVpnModalOpen(true);
+      triggerErrorModal(err, () => handleFetchInfo(url));
       return Promise.reject(err);
     } finally {
       setIsFetchingInfo(false);
@@ -169,6 +219,10 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
                   ? (status as DownloadItem['status'])
                   : item.status;
 
+                if (status === 'error' && errorMsg) {
+                  triggerErrorModal(errorMsg, () => handleConfirmDownload());
+                }
+
                 return {
                   ...item,
                   progress,
@@ -201,14 +255,15 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         readableSize
       );
     } catch (err: any) {
+      const errorMsgStr = err?.message || 'Download failed';
       setDownloads((prev) =>
         prev.map((item) =>
           item.id === downloadId
-            ? { ...item, status: 'error', errorMsg: 'Download failed' }
+            ? { ...item, status: 'error', errorMsg: errorMsgStr }
             : item
         )
       );
-      setIsVpnModalOpen(true);
+      triggerErrorModal(err, () => handleConfirmDownload());
     }
   };
 
@@ -237,6 +292,10 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       downloads,
       settings, updateSettings: setSettings,
       isVpnModalOpen, setIsVpnModalOpen,
+      generalErrorModal, setGeneralErrorModal,
+      isLogViewerOpen, setIsLogViewerOpen,
+      isOnboardingOpen, setIsOnboardingOpen,
+      handleCompleteOnboarding,
       isBottomSheetOpen, setIsBottomSheetOpen,
       selectedFormatToDownload,
       handleFetchInfo,
@@ -246,7 +305,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       handleDeleteDownload,
       changeLanguage,
       activeDownload,
-      inputUrl, setInputUrl
+      inputUrl, setInputUrl,
+      triggerErrorModal
     }}>
       {children}
     </AppContext.Provider>

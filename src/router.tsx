@@ -15,6 +15,8 @@ import { CapacitorShareTarget } from '@capgo/capacitor-share-target';
 import { BottomNav } from './components/BottomNav';
 import { CreatorSupportBottomSheet } from './components/CreatorSupportBottomSheet';
 import { VpnRequiredModal } from './components/VpnRequiredModal';
+import { GeneralErrorModal } from './components/GeneralErrorModal';
+import { LogViewerModal } from './components/LogViewerModal';
 import { useAppContext } from './context/AppContext';
 
 // Pages
@@ -23,12 +25,16 @@ import { VideoPreviewView } from './pages/Preview';
 import { DownloadingView } from './pages/Downloading';
 import { DownloadsHistory } from './pages/Downloads';
 import { SettingsView } from './pages/Settings';
+import { OnboardingView } from './pages/Onboarding';
 
 const RootLayout = () => {
   const router = useRouter();
   const { 
     isBottomSheetOpen, setIsBottomSheetOpen, handleConfirmDownload,
-    isVpnModalOpen, setIsVpnModalOpen, handleFetchInfo, setInputUrl
+    isVpnModalOpen, setIsVpnModalOpen, handleFetchInfo, setInputUrl,
+    generalErrorModal, setGeneralErrorModal,
+    isLogViewerOpen, setIsLogViewerOpen,
+    isOnboardingOpen, handleCompleteOnboarding, changeLanguage
   } = useAppContext();
 
   useEffect(() => {
@@ -111,6 +117,15 @@ const RootLayout = () => {
   if (currentPath === '/downloads') activeTab = 'downloads';
   if (currentPath === '/settings') activeTab = 'settings';
 
+  if (isOnboardingOpen) {
+    return (
+      <OnboardingView
+        onComplete={handleCompleteOnboarding}
+        onLanguageChange={changeLanguage}
+      />
+    );
+  }
+
   return (
     <div className="h-[100dvh] overflow-hidden bg-base-100 text-base-content flex flex-col pb-20 safe-top relative">
       <main className="flex-1 max-w-lg w-full mx-auto overflow-hidden relative">
@@ -129,6 +144,22 @@ const RootLayout = () => {
       <VpnRequiredModal
         isOpen={isVpnModalOpen}
         onClose={() => setIsVpnModalOpen(false)}
+      />
+
+      <GeneralErrorModal
+        isOpen={generalErrorModal.isOpen}
+        errorMessage={generalErrorModal.errorMsg}
+        onClose={() => setGeneralErrorModal((prev) => ({ ...prev, isOpen: false }))}
+        onRetry={generalErrorModal.retryAction}
+        onViewLogs={() => {
+          setGeneralErrorModal((prev) => ({ ...prev, isOpen: false }));
+          setIsLogViewerOpen(true);
+        }}
+      />
+
+      <LogViewerModal
+        isOpen={isLogViewerOpen}
+        onClose={() => setIsLogViewerOpen(false)}
       />
 
       {showBottomNav && (

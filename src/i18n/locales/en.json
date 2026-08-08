@@ -20,7 +20,8 @@
   "preview": {
     "chooseQuality": "Choose quality",
     "audioOnly": "Audio Only (MP3)",
-    "downloadBtn": "Download"
+    "downloadBtn": "Download",
+    "views": "views"
   },
   "downloading": {
     "title": "Downloading",
@@ -54,7 +55,13 @@
     "about": "About",
     "rateApp": "Rate this app",
     "shareApp": "Share this app",
-    "version": "Version"
+    "version": "Version",
+    "systemLogs": "System Logs",
+    "systemLogsSub": "View, clear and save log file",
+    "changeLocation": "Change",
+    "selectFolder": "Select default folder or custom path:",
+    "customFolder": "Custom folder path...",
+    "locationSaved": "Download location saved."
   },
   "creatorSupport": {
     "title": "Support Content Creators",
@@ -71,5 +78,37 @@
     "title": "VPN or IP Change Required",
     "description": "YouTube has blocked your request due to anti-bot policies. Please enable a VPN or change your server and try again.",
     "confirm": "Got it"
+  },
+  "generalErrorModal": {
+    "title": "An Error Occurred",
+    "defaultMsg": "Something went wrong during the operation.",
+    "viewLog": "View Log",
+    "retry": "Retry",
+    "ok": "OK"
+  },
+  "logViewer": {
+    "title": "System Logs",
+    "entries": "entries",
+    "empty": "No logs recorded.",
+    "copy": "Copy Logs",
+    "save": "Save Logs to File",
+    "clear": "Clear Logs",
+    "saveToFile": "Save to File",
+    "close": "Close",
+    "copied": "Logs copied to clipboard",
+    "saved": "Log file saved"
+  },
+  "onboarding": {
+    "welcome": "Welcome!",
+    "step1Title": "Select Language",
+    "step1Sub": "Please select your preferred language.",
+    "step2Title": "Direct Share from YouTube",
+    "step2Desc": "No need to copy links! Tap Share in the YouTube app and choose Yootra to immediately fetch and download.",
+    "step3Title": "Best Practices for Downloading",
+    "step3Desc": "To prevent temporary IP throttling by YouTube, avoid downloading too many videos consecutively. If you encounter issues, using a VPN is recommended.",
+    "next": "Next",
+    "back": "Back",
+    "start": "Get Started",
+    "skip": "Skip"
   }
 }
