@@ -5,8 +5,8 @@
 
 **The fastest and easiest way to download YouTube videos and audio on your mobile device.**
 
-[![Download Yootra](https://img.shields.io/badge/Download-Latest_APK-2ea44f?style=for-the-badge&logo=android)](#https://github.com/yootra/yootra-mobile/releases/latest)
-[![Donate](https://img.shields.io/badge/Donate-Support_Us-ff5e5b?style=for-the-badge&logo=coffeescript)](#https://www.coffeete.ir/sajjadmrx)
+[![Download Yootra](https://img.shields.io/badge/Download-Latest_APK-2ea44f?style=for-the-badge&logo=android)](https://github.com/yootra/yootra-mobile/releases/latest)
+[![Donate](https://img.shields.io/badge/Donate-Support_Us-ff5e5b?style=for-the-badge&logo=coffeescript)](https://www.coffeete.ir/sajjadmrx)
 
 <br>
   <img src=".github/assets/banner.png" alt="Yootra App Banner" />
