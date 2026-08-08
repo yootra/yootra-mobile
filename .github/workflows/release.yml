@@ -88,11 +88,12 @@ jobs:
           mkdir -p release-assets
           VERSION="${RELEASE_VERSION:-v1.0.0}"
           TYPE="${BUILD_TYPE}"
-          if [ -f android/app/build/outputs/apk/release/app-release.apk ]; then
-            cp android/app/build/outputs/apk/release/app-release.apk "release-assets/yootra-mobile-${VERSION}-${TYPE}.apk"
-          elif [ -f android/app/build/outputs/apk/release/app-release-unsigned.apk ]; then
-            cp android/app/build/outputs/apk/release/app-release-unsigned.apk "release-assets/yootra-mobile-${VERSION}-${TYPE}-unsigned.apk"
-          fi
+          cd android/app/build/outputs/apk/release
+          for file in *.apk; do
+            if [ -f "$file" ]; then
+              cp "$file" "../../../../../release-assets/yootra-mobile-${VERSION}-${TYPE}-${file}"
+            fi
+          done
 
       - name: Upload Build Artifacts
         uses: actions/upload-artifact@v4
