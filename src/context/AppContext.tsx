@@ -69,8 +69,9 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   useEffect(() => {
     localStorage.setItem('yt_app_settings', JSON.stringify(settings));
     document.documentElement.setAttribute('data-theme', settings.theme || 'light');
-    const isDark = settings.theme === 'dark' || settings.theme === 'dim' || settings.theme === 'synthwave';
-    StatusBarService.updateTheme(isDark, isDark ? '#1d232a' : '#ffffff');
+    const lightThemes = ['light', 'retro', 'cyberpunk', 'valentine'];
+    const isDark = !lightThemes.includes(settings.theme || 'light');
+    StatusBarService.updateTheme(isDark);
   }, [settings]);
 
   useEffect(() => {
