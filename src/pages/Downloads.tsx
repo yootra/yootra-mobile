@@ -62,43 +62,47 @@ export const DownloadsHistory: React.FC<DownloadsHistoryProps> = ({
   };
 
   return (
-    <div className="space-y-4 animate-in fade-in duration-300 pb-12 relative">
-      <div className="flex items-center justify-between pt-1">
-        <h1 className="text-2xl font-bold text-base-content tracking-tight">
-          {t('downloads.title')}
-        </h1>
+    <div className="h-full flex flex-col pt-3 px-5 animate-in fade-in duration-300 relative">
+      <div className="shrink-0 space-y-4 pb-4">
+        <div className="flex items-center justify-between pt-1">
+          <h1 className="text-2xl font-bold text-base-content tracking-tight">
+            {t('downloads.title')}
+          </h1>
+        </div>
+
+        <div className="relative">
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder={t('downloads.searchPlaceholder')}
+            className="w-full bg-base-200 border border-base-300 rounded-2xl py-3 pl-10 pr-4 text-sm text-base-content placeholder-base-content/40 focus:outline-none focus:border-primary rtl:pr-10 rtl:pl-4 transition shadow-xs"
+          />
+          <Search className="w-4 h-4 text-base-content/40 absolute left-3.5 top-3.5 rtl:right-3.5 rtl:left-auto" />
+        </div>
+
+        <div className="flex items-center gap-2 overflow-x-auto pb-1 text-xs no-scrollbar">
+          {(['all', 'completed', 'downloading', 'video', 'audio'] as const).map((filter) => {
+            const isActive = activeFilter === filter;
+            return (
+              <button
+                key={filter}
+                type="button"
+                onClick={() => setActiveFilter(filter)}
+                className={`px-4 py-1.5 rounded-full font-semibold capitalize whitespace-nowrap transition ${
+                  isActive
+                    ? 'bg-primary text-primary-content shadow-xs'
+                    : 'bg-base-200 text-base-content/70 hover:bg-base-300'
+                }`}
+              >
+                {t(`downloads.${filter}`)}
+              </button>
+            );
+          })}
+        </div>
       </div>
 
-      <div className="relative">
-        <input
-          type="text"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder={t('downloads.searchPlaceholder')}
-          className="w-full bg-base-200 border border-base-300 rounded-2xl py-3 pl-10 pr-4 text-sm text-base-content placeholder-base-content/40 focus:outline-none focus:border-primary rtl:pr-10 rtl:pl-4 transition shadow-xs"
-        />
-        <Search className="w-4 h-4 text-base-content/40 absolute left-3.5 top-3.5 rtl:right-3.5 rtl:left-auto" />
-      </div>
-
-      <div className="flex items-center gap-2 overflow-x-auto pb-1 text-xs no-scrollbar">
-        {(['all', 'completed', 'downloading', 'video', 'audio'] as const).map((filter) => {
-          const isActive = activeFilter === filter;
-          return (
-            <button
-              key={filter}
-              type="button"
-              onClick={() => setActiveFilter(filter)}
-              className={`px-4 py-1.5 rounded-full font-semibold capitalize whitespace-nowrap transition ${
-                isActive
-                  ? 'bg-primary text-primary-content shadow-xs'
-                  : 'bg-base-200 text-base-content/70 hover:bg-base-300'
-              }`}
-            >
-              {t(`downloads.${filter}`)}
-            </button>
-          );
-        })}
-      </div>
+      <div className="flex-1 overflow-y-auto space-y-3 pb-24 pr-1 custom-scrollbar">
 
       {filtered.length === 0 ? (
         <div className="bg-base-200/50 rounded-2xl p-10 text-center space-y-2 border border-base-300/50">
@@ -242,6 +246,7 @@ export const DownloadsHistory: React.FC<DownloadsHistoryProps> = ({
           ))}
         </div>
       )}
+      </div>
 
       {onOpenHomeUrlInput && (
         <button

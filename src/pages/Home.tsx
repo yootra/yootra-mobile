@@ -54,19 +54,20 @@ export const HomeView: React.FC<HomeViewProps> = ({
   };
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-300">
-      <div className="flex items-center justify-between pt-2">
-        <div>
-          <h1 className="text-2xl font-bold text-base-content tracking-tight">
-            {t('home.title')}
-          </h1>
-          <p className="text-sm text-base-content/60 mt-0.5">
-            {t('home.subtitle')}
-          </p>
+    <div className="h-full flex flex-col pt-3 px-5 animate-in fade-in duration-300">
+      <div className="shrink-0 space-y-6 pb-4">
+        <div className="flex items-center justify-between pt-2">
+          <div>
+            <h1 className="text-2xl font-bold text-base-content tracking-tight">
+              {t('home.title')}
+            </h1>
+            <p className="text-sm text-base-content/60 mt-0.5">
+              {t('home.subtitle')}
+            </p>
+          </div>
         </div>
-      </div>
 
-      <form onSubmit={handleSubmit} className="space-y-3">
+        <form onSubmit={handleSubmit} className="space-y-3">
         <div className="relative flex items-center">
           <div className="absolute left-4 text-base-content/40 rtl:right-4 rtl:left-auto">
             <Clipboard className="w-5 h-5" />
@@ -106,7 +107,9 @@ export const HomeView: React.FC<HomeViewProps> = ({
           )}
         </button>
       </form>
+    </div>
 
+    <div className="flex-1 overflow-y-auto space-y-4 pb-24 pr-1 custom-scrollbar">
       {activeDownload && (
         <div
           onClick={onOpenActiveDownloading}
@@ -235,6 +238,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
             ))}
           </div>
         )}
+        </div>
       </div>
     </div>
   );

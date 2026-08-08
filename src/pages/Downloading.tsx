@@ -29,8 +29,8 @@ export const DownloadingView: React.FC<DownloadingViewProps> = ({
   const formattedDownloaded = formatFileSize(downloadedBytes, item.qualityLabel, item.duration || 180);
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-300">
-      <div className="flex items-center justify-between pt-1">
+    <div className="h-full flex flex-col pt-3 px-5 animate-in fade-in duration-300">
+      <div className="shrink-0 flex items-center justify-between pt-1 pb-2">
         <div className="flex items-center gap-3">
           <button
             type="button"
@@ -43,8 +43,9 @@ export const DownloadingView: React.FC<DownloadingViewProps> = ({
             {t('downloading.title')}
           </h1>
         </div>
- 
       </div>
+
+      <div className="flex-1 overflow-y-auto pb-24 pr-1 custom-scrollbar">
 
       <div className="flex flex-col items-center justify-center py-6 space-y-4">
         <div className="relative w-56 h-56 flex items-center justify-center">
@@ -164,6 +165,7 @@ export const DownloadingView: React.FC<DownloadingViewProps> = ({
               <span>{formattedDownloaded} / {formattedTotal}</span>
               <span>{progress}%</span>
             </div>
+          </div>
           </div>
         </div>
       </div>

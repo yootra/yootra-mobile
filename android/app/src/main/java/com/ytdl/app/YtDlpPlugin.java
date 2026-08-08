@@ -74,7 +74,7 @@ public class YtDlpPlugin extends Plugin {
             try {
                 ensureYoutubeDLInitialized();
                 YoutubeDLRequest infoRequest = new YoutubeDLRequest(videoUrl);
-                infoRequest.addOption("--extractor-args", "youtube:player_client=android");
+                infoRequest.addOption("--extractor-args", "youtube:player_client=mweb,ios,web");
                 infoRequest.addOption("--no-warnings");
                 infoRequest.addOption("--no-check-certificates");
                 if (infoCookiesFilePath != null && !infoCookiesFilePath.isEmpty()) {
@@ -106,11 +106,11 @@ public class YtDlpPlugin extends Plugin {
                     info.put("viewCount", 1000000);
 
                     JSONArray formats = new JSONArray();
-                    formats.put(createFormat("1080p", "1080p Full HD", "mp4", "1920x1080", 95000000, false, false, "1080"));
-                    formats.put(createFormat("720p", "720p HD", "mp4", "1280x720", 45000000, false, false, "720"));
-                    formats.put(createFormat("480p", "480p SD", "mp4", "854x480", 22000000, false, false, "480"));
-                    formats.put(createFormat("360p", "360p Low", "mp4", "640x360", 12000000, false, false, "360"));
-                    formats.put(createFormat("audio-mp3", "Audio Only (MP3)", "mp3", "Audio", 6500000, false, true, "audio"));
+                    formats.put(createFormat("1080p", "1080p Full HD", "mp4", "1920x1080", 0, false, false, "1080"));
+                    formats.put(createFormat("720p", "720p HD", "mp4", "1280x720", 0, false, false, "720"));
+                    formats.put(createFormat("480p", "480p SD", "mp4", "854x480", 0, false, false, "480"));
+                    formats.put(createFormat("360p", "360p Low", "mp4", "640x360", 0, false, false, "360"));
+                    formats.put(createFormat("audio-mp3", "Audio Only (MP3)", "mp3", "Audio", 0, false, true, "audio"));
 
                     info.put("formats", formats);
                     ret.put("info", info);
@@ -175,29 +175,33 @@ public class YtDlpPlugin extends Plugin {
         if (privateDir != null && !privateDir.exists()) {
             privateDir.mkdirs();
         }
-        File tempTargetFile = new File(privateDir, sanitizedTitle + "." + ext);
+        
+        String tempPrefix = sanitizedTitle + "_" + finalDownloadId;
+        String template = tempPrefix + ".%(ext)s";
+        File tempTargetTemplateFile = new File(privateDir, template);
 
-        sendLog("info", "Target output path: " + targetFile.getAbsolutePath() + " (Temp: " + tempTargetFile.getAbsolutePath() + ")");
+        sendLog("info", "Target output path: " + targetFile.getAbsolutePath());
 
         JSObject initialRet = new JSObject();
         initialRet.put("downloadId", finalDownloadId);
         initialRet.put("filePath", targetFile.getAbsolutePath());
         call.resolve(initialRet);
 
+        final File finalBaseDir = baseDir;
         executor.execute(() -> {
             try {
                 ensureYoutubeDLInitialized();
                 sendLog("info", "Executing yt-dlp native binary for: " + videoUrl);
 
-                String formatSelector = "b[ext=mp4]/best[ext=mp4]/b/best";
-                if ("1080p".equals(formatId)) formatSelector = "b[height<=1080]/best[height<=1080]/best";
-                else if ("720p".equals(formatId)) formatSelector = "b[height<=720]/best[height<=720]/best";
-                else if ("480p".equals(formatId)) formatSelector = "b[height<=480]/best[height<=480]/best";
-                else if ("360p".equals(formatId)) formatSelector = "b[height<=360]/best[height<=360]/best";
-                else if (formatId != null && formatId.contains("audio")) formatSelector = "ba/bestaudio/best";
+                String formatSelector = "bv*+ba/b";
+                if ("1080p".equals(formatId)) formatSelector = "bv*[height<=1080]+ba/b[height<=1080]/b";
+                else if ("720p".equals(formatId)) formatSelector = "bv*[height<=720]+ba/b[height<=720]/b";
+                else if ("480p".equals(formatId)) formatSelector = "bv*[height<=480]+ba/b[height<=480]/b";
+                else if ("360p".equals(formatId)) formatSelector = "bv*[height<=360]+ba/b[height<=360]/b";
+                else if (formatId != null && formatId.contains("audio")) formatSelector = "ba/bestaudio/b";
 
                 YoutubeDLRequest request = new YoutubeDLRequest(videoUrl);
-                request.addOption("-o", tempTargetFile.getAbsolutePath());
+                request.addOption("-o", tempTargetTemplateFile.getAbsolutePath());
                 if (formatSelector != null) {
                     request.addOption("-f", formatSelector);
                 }
@@ -206,8 +210,6 @@ public class YtDlpPlugin extends Plugin {
                 if (formatId != null && formatId.contains("audio")) {
                     request.addOption("-x");
                     request.addOption("--audio-format", ext);
-                } else {
-                    request.addOption("--merge-output-format", ext);
                 }
 
                 request.addOption("--no-playlist");
@@ -217,7 +219,7 @@ public class YtDlpPlugin extends Plugin {
                 request.addOption("--no-warnings");
                 request.addOption("--no-check-certificates");
                 request.addOption("--geo-bypass");
-                request.addOption("--extractor-args", "youtube:player_client=android");
+                request.addOption("--extractor-args", "youtube:player_client=mweb,ios,web");
                 String cookiesFilePath = call.getString("cookiesFilePath");
                 if (cookiesFilePath != null && !cookiesFilePath.isEmpty()) {
                     File cookiesFile = new File(cookiesFilePath);
@@ -239,38 +241,53 @@ public class YtDlpPlugin extends Plugin {
                         progressObj.put("speed", "Downloading");
                         progressObj.put("eta", etaInSeconds != null && etaInSeconds >= 0 ? etaInSeconds + "s" : "Calculating...");
                         progressObj.put("status", "downloading");
-                        progressObj.put("filePath", tempTargetFile.getAbsolutePath());
+                        progressObj.put("filePath", targetFile.getAbsolutePath());
                         notifyListeners("downloadProgress", progressObj);
                     }
                     return Unit.INSTANCE;
                 });
 
-                if (tempTargetFile.exists() && tempTargetFile.length() > 0) {
+                File actualTempFile = null;
+                File[] files = privateDir.listFiles();
+                if (files != null) {
+                    for (File f : files) {
+                        if (f.getName().startsWith(tempPrefix + ".")) {
+                            actualTempFile = f;
+                            break;
+                        }
+                    }
+                }
+
+                if (actualTempFile != null && actualTempFile.exists() && actualTempFile.length() > 0) {
                     sendLog("info", "Download complete in temp storage. Copying to public storage...");
-                    try (java.io.InputStream in = new java.io.FileInputStream(tempTargetFile);
-                         java.io.OutputStream out = new java.io.FileOutputStream(targetFile)) {
+                    
+                    String actualExt = actualTempFile.getName().substring(actualTempFile.getName().lastIndexOf(".") + 1);
+                    File actualTargetFile = new File(finalBaseDir, sanitizedTitle + "." + actualExt);
+
+                    try (java.io.InputStream in = new java.io.FileInputStream(actualTempFile);
+                         java.io.OutputStream out = new java.io.FileOutputStream(actualTargetFile)) {
                         byte[] buffer = new byte[8192];
                         int length;
                         while ((length = in.read(buffer)) > 0) {
                             out.write(buffer, 0, length);
                         }
                     }
-                    tempTargetFile.delete();
+                    actualTempFile.delete();
 
                     MediaScannerConnection.scanFile(
                         ctx,
-                        new String[]{targetFile.getAbsolutePath()},
-                        new String[]{ext.equals("mp3") ? "audio/mpeg" : "video/mp4"},
+                        new String[]{actualTargetFile.getAbsolutePath()},
+                        new String[]{actualExt.equals("mp3") ? "audio/mpeg" : (actualExt.equals("mkv") ? "video/x-matroska" : "video/mp4")},
                         (path, uri) -> sendLog("success", "MediaScanner registered file: " + uri)
                     );
 
-                    sendLog("success", "yt-dlp Download SUCCESS! Size: " + targetFile.length() + " bytes at " + targetFile.getAbsolutePath());
+                    sendLog("success", "yt-dlp Download SUCCESS! Size: " + actualTargetFile.length() + " bytes at " + actualTargetFile.getAbsolutePath());
 
                     JSObject completeObj = new JSObject();
                     completeObj.put("downloadId", finalDownloadId);
                     completeObj.put("progress", 100);
                     completeObj.put("status", "completed");
-                    completeObj.put("filePath", targetFile.getAbsolutePath());
+                    completeObj.put("filePath", actualTargetFile.getAbsolutePath());
                     notifyListeners("downloadProgress", completeObj);
                     return;
                 }
@@ -348,11 +365,11 @@ public class YtDlpPlugin extends Plugin {
 
         JSONArray formats = new JSONArray();
         try {
-            formats.put(createFormat("1080p", "1080p Full HD", "mp4", "1920x1080", 95000000, false, false, "1080"));
-            formats.put(createFormat("720p", "720p HD", "mp4", "1280x720", 45000000, false, false, "720"));
-            formats.put(createFormat("480p", "480p SD", "mp4", "854x480", 22000000, false, false, "480"));
-            formats.put(createFormat("360p", "360p Low", "mp4", "640x360", 12000000, false, false, "360"));
-            formats.put(createFormat("audio-mp3", "Audio Only (MP3)", "mp3", "Audio", 6500000, false, true, "audio"));
+            formats.put(createFormat("1080p", "1080p Full HD", "mp4", "1920x1080", 0, false, false, "1080"));
+            formats.put(createFormat("720p", "720p HD", "mp4", "1280x720", 0, false, false, "720"));
+            formats.put(createFormat("480p", "480p SD", "mp4", "854x480", 0, false, false, "480"));
+            formats.put(createFormat("360p", "360p Low", "mp4", "640x360", 0, false, false, "360"));
+            formats.put(createFormat("audio-mp3", "Audio Only (MP3)", "mp3", "Audio", 0, false, true, "audio"));
         } catch (Exception ignored) {}
 
         info.put("formats", formats);

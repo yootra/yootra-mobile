@@ -37,17 +37,18 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   };
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-300 pb-10">
-      <div className="pt-1">
+    <div className="h-full flex flex-col pt-3 px-5 animate-in fade-in duration-300">
+      <div className="pt-1 shrink-0">
         <h1 className="text-2xl font-bold text-base-content tracking-tight">
           {t('settings.title')}
         </h1>
       </div>
 
-      <div className="space-y-3">
-        <h2 className="text-xs font-bold text-primary uppercase tracking-wider px-1">
-          {t('settings.general')}
-        </h2>
+      <div className="flex-1 overflow-y-auto space-y-6 pt-6 pb-24 pr-1 custom-scrollbar">
+        <div className="space-y-3">
+          <h2 className="text-xs font-bold text-primary uppercase tracking-wider px-1">
+            {t('settings.general')}
+          </h2>
 
         <div className="bg-base-200/60 border border-base-300 rounded-2xl divide-y divide-base-300/60 overflow-hidden shadow-xs">
           <div className="p-4 space-y-2">
@@ -271,6 +272,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
               1.0.0
             </span>
           </div>
+        </div>
         </div>
       </div>
     </div>

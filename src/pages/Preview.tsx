@@ -28,7 +28,7 @@ export const VideoPreviewView: React.FC<VideoPreviewViewProps> = ({
     videoInfo.formats[0];
 
   return (
-    <div className="space-y-5 animate-in fade-in duration-300">
+    <div className="h-full flex flex-col px-5 py-3 space-y-5 animate-in fade-in duration-300">
       <div className="flex items-center justify-between pt-1">
         <button
           type="button"
@@ -72,12 +72,12 @@ export const VideoPreviewView: React.FC<VideoPreviewViewProps> = ({
         </div>
       </div>
 
-      <div className="space-y-3 pt-2">
-        <h2 className="text-sm font-bold text-base-content uppercase tracking-wider">
+      <div className="flex-1 overflow-hidden flex flex-col pt-2">
+        <h2 className="text-sm font-bold text-base-content uppercase tracking-wider mb-3">
           {t('preview.chooseQuality')}
         </h2>
 
-        <div className="space-y-2.5">
+        <div className="flex-1 overflow-y-auto space-y-2.5 pb-2 pr-1 custom-scrollbar">
           {videoInfo.formats.map((fmt) => {
             const isSelected = fmt.formatId === selectedFormatId;
             return (

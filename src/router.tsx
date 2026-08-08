@@ -112,8 +112,8 @@ const RootLayout = () => {
   if (currentPath === '/settings') activeTab = 'settings';
 
   return (
-    <div className="min-h-screen bg-base-100 text-base-content flex flex-col pb-20 safe-top">
-      <main className="flex-1 max-w-lg w-full mx-auto px-5 py-3">
+    <div className="h-[100dvh] overflow-hidden bg-base-100 text-base-content flex flex-col pb-20 safe-top relative">
+      <main className="flex-1 max-w-lg w-full mx-auto overflow-hidden relative">
         <Outlet />
       </main>
 
