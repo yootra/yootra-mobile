@@ -50,8 +50,8 @@ Yootra is provided for free! If you enjoy using the app and want to help keep it
 If you want to contribute or run the project locally on your machine:
 
 ```bash
-git clone https://github.com/yourusername/yt-downloader-app.git
-cd yt-downloader-app
+git clone https://github.com/yootra/yootra-mobile.git
+cd yootra-mobile
 bun install
 bun dev
 ```
