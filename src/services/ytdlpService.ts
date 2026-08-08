@@ -4,7 +4,7 @@ import { logger } from './loggerService';
 
 interface YtDlpNativePlugin {
   getVideoInfo(options: { url: string }): Promise<{ info: VideoInfo }>;
-  downloadVideo(options: { url: string; formatId: string; title: string; downloadLocation?: string; downloadId?: string }): Promise<{ downloadId: string; filePath?: string }>;
+  downloadVideo(options: { url: string; formatId: string; title: string; downloadLocation?: string; downloadId?: string; ext?: string }): Promise<{ downloadId: string; filePath?: string }>;
   cancelDownload(options: { downloadId: string }): Promise<{ success: boolean }>;
   getDownloadedFiles(): Promise<{ files: string[] }>;
   addListener(eventName: 'downloadProgress', listenerFunc: (data: { downloadId: string; progress: number; speed: string; eta: string; status: string; filePath?: string; errorMsg?: string }) => void): Promise<{ remove: () => void }>;
@@ -48,6 +48,7 @@ export class YtDlpService {
     title: string,
     downloadId: string,
     downloadLocation: string,
+    ext: string,
     onProgress: (progress: number, speed: string, eta: string, status: string, filePath?: string, errorMsg?: string) => void
   ): Promise<string> {
     logger.addLog('info', `Starting download task. Format: ${formatId}, Location: ${downloadLocation}, Title: ${title}`);
@@ -77,7 +78,7 @@ export class YtDlpService {
 
         removeListener = listener.remove;
 
-        const result = await YtDlpNative.downloadVideo({ url, formatId, title, downloadLocation, downloadId });
+        const result = await YtDlpNative.downloadVideo({ url, formatId, title, downloadLocation, downloadId, ext });
         logger.addLog('info', `Native downloadVideo initialized. Target path: ${result.filePath}`);
       });
     } catch (err: any) {
@@ -142,7 +143,7 @@ export class YtDlpService {
 
         if (currentProgress >= 100) {
           clearInterval(interval);
-          resolve(`${downloadLocation}/${title.replace(/[^a-zA-Z0-9]/g, '_')}.mp4`);
+          resolve(`${downloadLocation}/${title.replace(/[\\/:*?"<>|]/g, '_')}.mp4`);
         }
       }, 250);
     });

@@ -6,8 +6,12 @@ export class NotificationService {
       const status = await LocalNotifications.checkPermissions();
       if (status.display !== 'granted') {
         const res = await LocalNotifications.requestPermissions();
+        if (res.display === 'granted') {
+          await this.createNotificationChannel();
+        }
         return res.display === 'granted';
       }
+      await this.createNotificationChannel();
       return true;
     } catch {
       if ('Notification' in window && Notification.permission !== 'granted') {
@@ -15,6 +19,20 @@ export class NotificationService {
         return perm === 'granted';
       }
       return true;
+    }
+  }
+
+  private static async createNotificationChannel() {
+    try {
+      await LocalNotifications.createChannel({
+        id: 'downloads_channel',
+        name: 'Downloads',
+        description: 'Notifications for completed downloads',
+        importance: 5,
+        vibration: true
+      });
+    } catch (e) {
+      // Ignore if not supported (e.g., web)
     }
   }
 
@@ -30,7 +48,9 @@ export class NotificationService {
             id: Math.floor(Math.random() * 100000),
             title: notifTitle,
             body: extraDetails ? `${notifBody}\n${extraDetails}` : notifBody,
-            smallIcon: 'ic_launcher',
+            smallIcon: 'ic_stat_name',
+            largeIcon: 'ic_launcher',
+            channelId: 'downloads_channel',
             actionTypeId: '',
             extra: null
           }

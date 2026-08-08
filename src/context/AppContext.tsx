@@ -27,6 +27,8 @@ interface AppContextType {
   handleDeleteDownload: (id: string) => void;
   changeLanguage: (lang: string) => void;
   activeDownload: DownloadItem | undefined;
+  inputUrl: string;
+  setInputUrl: (url: string) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -42,6 +44,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const [selectedFormatToDownload, setSelectedFormatToDownload] = useState<VideoFormat | null>(null);
   const [isBottomSheetOpen, setIsBottomSheetOpen] = useState<boolean>(false);
   const [isVpnModalOpen, setIsVpnModalOpen] = useState<boolean>(false);
+  const [inputUrl, setInputUrl] = useState<string>('');
 
   const [downloads, setDownloads] = useState<DownloadItem[]>(() => {
     const saved = localStorage.getItem('yt_downloads_history');
@@ -71,7 +74,21 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     document.documentElement.setAttribute('data-theme', settings.theme || 'light');
     const lightThemes = ['light', 'retro', 'cyberpunk', 'valentine'];
     const isDark = !lightThemes.includes(settings.theme || 'light');
-    StatusBarService.updateTheme(isDark);
+
+    const themeColors: Record<string, string> = {
+      light: '#ffffff',
+      dark: '#1d232a',
+      dim: '#2a303c',
+      synthwave: '#1a103c',
+      retro: '#e4d8b4',
+      cyberpunk: '#ffe000',
+      valentine: '#e96d7b',
+      aqua: '#345da7',
+      black: '#000000'
+    };
+    const hexColor = themeColors[settings.theme || 'light'] || '#ffffff';
+
+    StatusBarService.updateTheme(isDark, hexColor);
   }, [settings]);
 
   useEffect(() => {
@@ -143,6 +160,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         videoInfo.title,
         downloadId,
         settings.downloadLocation,
+        format.ext,
         (progress, speed, eta, status, path, errorMsg) => {
           setDownloads((prev) =>
             prev.map((item) => {
@@ -227,7 +245,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       handleCancelDownload,
       handleDeleteDownload,
       changeLanguage,
-      activeDownload
+      activeDownload,
+      inputUrl, setInputUrl
     }}>
       {children}
     </AppContext.Provider>

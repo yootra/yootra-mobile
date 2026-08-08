@@ -9,6 +9,8 @@ import {
 } from '@tanstack/react-router';
 import { App as CapacitorApp } from '@capacitor/app';
 import { Toast } from '@capacitor/toast';
+import { Capacitor } from '@capacitor/core';
+import { CapacitorShareTarget } from '@capgo/capacitor-share-target';
 
 import { BottomNav } from './components/BottomNav';
 import { CreatorSupportBottomSheet } from './components/CreatorSupportBottomSheet';
@@ -26,7 +28,7 @@ const RootLayout = () => {
   const router = useRouter();
   const { 
     isBottomSheetOpen, setIsBottomSheetOpen, handleConfirmDownload,
-    isVpnModalOpen, setIsVpnModalOpen 
+    isVpnModalOpen, setIsVpnModalOpen, handleFetchInfo, setInputUrl
   } = useAppContext();
 
   useEffect(() => {
@@ -69,6 +71,37 @@ const RootLayout = () => {
     };
   }, [router, isBottomSheetOpen, isVpnModalOpen, setIsBottomSheetOpen, setIsVpnModalOpen]);
 
+  useEffect(() => {
+    if (Capacitor.isNativePlatform()) {
+      const listener = CapacitorShareTarget.addListener('shareReceived', async (event: any) => {
+        let extractedUrl = '';
+        if (event.texts && event.texts.length > 0) {
+          const text = event.texts[0];
+          const urlRegex = /(https?:\/\/[^\s]+)/g;
+          const matches = text.match(urlRegex);
+          if (matches && matches.length > 0) {
+            extractedUrl = matches[0];
+          } else {
+            extractedUrl = text;
+          }
+        }
+
+        if (extractedUrl) {
+          setInputUrl(extractedUrl);
+          try {
+            await handleFetchInfo(extractedUrl);
+            router.navigate({ to: '/preview' });
+          } catch (e) {
+            console.error('Failed to process shared link', e);
+          }
+        }
+      });
+      return () => {
+        listener.then((l: any) => l.remove());
+      };
+    }
+  }, [handleFetchInfo, router]);
+
   const location = useLocation();
   const currentPath = location.pathname;
   const showBottomNav = ['/', '/downloads', '/settings'].includes(currentPath);
@@ -86,8 +119,8 @@ const RootLayout = () => {
 
       <CreatorSupportBottomSheet
         isOpen={isBottomSheetOpen}
-        onConfirm={async () => {
-          await handleConfirmDownload();
+        onConfirm={() => {
+          handleConfirmDownload();
           router.navigate({ to: '/downloading' });
         }}
         onCancel={() => setIsBottomSheetOpen(false)}
@@ -120,12 +153,14 @@ const homeRoute = createRoute({
   path: '/',
   component: () => {
     const { 
-      handleFetchInfo, isFetchingInfo, downloads 
+      handleFetchInfo, isFetchingInfo, downloads, inputUrl, setInputUrl 
     } = useAppContext();
     const router = useRouter();
 
     return (
       <HomeView
+        urlInput={inputUrl}
+        onUrlInputChange={setInputUrl}
         onFetchInfo={async (url) => {
           try {
             await handleFetchInfo(url);

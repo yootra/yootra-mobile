@@ -12,6 +12,8 @@ interface HomeViewProps {
   onViewAllDownloads: () => void;
   onSelectRecent: (item: DownloadItem) => void;
   onOpenActiveDownloading?: () => void;
+  urlInput: string;
+  onUrlInputChange: (val: string) => void;
 }
 
 export const HomeView: React.FC<HomeViewProps> = ({
@@ -20,10 +22,11 @@ export const HomeView: React.FC<HomeViewProps> = ({
   recentDownloads,
   onViewAllDownloads,
   onSelectRecent,
-  onOpenActiveDownloading
+  onOpenActiveDownloading,
+  urlInput,
+  onUrlInputChange
 }) => {
   const { t, i18n } = useTranslation();
-  const [urlInput, setUrlInput] = useState('');
 
   const activeDownload = recentDownloads.find((d) => d.status === 'downloading');
 
@@ -31,13 +34,13 @@ export const HomeView: React.FC<HomeViewProps> = ({
     try {
       const { value } = await CapClipboard.read();
       if (value) {
-        setUrlInput(value);
+        onUrlInputChange(value);
       }
     } catch {
       if (navigator.clipboard) {
         const text = await navigator.clipboard.readText();
         if (text) {
-          setUrlInput(text);
+          onUrlInputChange(text);
         }
       }
     }
@@ -71,7 +74,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
           <input
             type="url"
             value={urlInput}
-            onChange={(e) => setUrlInput(e.target.value)}
+            onChange={(e) => onUrlInputChange(e.target.value)}
             placeholder={t('home.placeholder')}
             className="w-full bg-base-200 border border-base-300 rounded-2xl py-3.5 pl-12 pr-12 text-sm text-base-content placeholder-base-content/40 focus:outline-none focus:border-primary rtl:pr-12 rtl:pl-12 transition shadow-xs"
             required

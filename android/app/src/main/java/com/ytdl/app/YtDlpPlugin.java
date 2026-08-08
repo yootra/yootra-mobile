@@ -137,8 +137,11 @@ public class YtDlpPlugin extends Plugin {
         final String finalDownloadId = downloadId;
         activeDownloads.put(finalDownloadId, true);
 
-        String sanitizedTitle = (title != null && !title.isEmpty()) ? title.replaceAll("[^a-zA-Z0-9]", "_") : "video_" + finalDownloadId;
-        String ext = (formatId != null && formatId.contains("audio")) ? "mp3" : "mp4";
+        String sanitizedTitle = (title != null && !title.isEmpty()) ? title.replaceAll("[\\\\/:*?\"<>|]", "_") : "video_" + finalDownloadId;
+        String rawExt = call.getString("ext");
+        final String ext = (rawExt == null || rawExt.isEmpty()) 
+            ? ((formatId != null && formatId.contains("audio")) ? "mp3" : "mp4") 
+            : rawExt;
 
         Context ctx = getContext();
         File baseDir;
@@ -149,8 +152,17 @@ public class YtDlpPlugin extends Plugin {
         } else if ("AppStorage".equalsIgnoreCase(locationSetting)) {
             baseDir = ctx.getFilesDir();
         } else {
-            baseDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES);
-            if (baseDir == null || !baseDir.exists()) baseDir = ctx.getExternalFilesDir(Environment.DIRECTORY_MOVIES);
+            String lowerExt = ext.toLowerCase();
+            String dirType;
+            if (lowerExt.matches("^(mp3|m4a|wav|flac|ogg|aac|wma)$")) {
+                dirType = Environment.DIRECTORY_MUSIC;
+            } else if (lowerExt.matches("^(mp4|mkv|webm|avi|mov|wmv|flv)$")) {
+                dirType = Environment.DIRECTORY_MOVIES;
+            } else {
+                dirType = Environment.DIRECTORY_DOWNLOADS;
+            }
+            baseDir = Environment.getExternalStoragePublicDirectory(dirType);
+            if (baseDir == null || !baseDir.exists()) baseDir = ctx.getExternalFilesDir(dirType);
         }
 
         if (baseDir != null && !baseDir.exists()) {
@@ -158,7 +170,14 @@ public class YtDlpPlugin extends Plugin {
         }
 
         File targetFile = new File(baseDir, sanitizedTitle + "." + ext);
-        sendLog("info", "Target output path: " + targetFile.getAbsolutePath());
+        
+        File privateDir = ctx.getExternalFilesDir(null);
+        if (privateDir != null && !privateDir.exists()) {
+            privateDir.mkdirs();
+        }
+        File tempTargetFile = new File(privateDir, sanitizedTitle + "." + ext);
+
+        sendLog("info", "Target output path: " + targetFile.getAbsolutePath() + " (Temp: " + tempTargetFile.getAbsolutePath() + ")");
 
         JSObject initialRet = new JSObject();
         initialRet.put("downloadId", finalDownloadId);
@@ -178,11 +197,23 @@ public class YtDlpPlugin extends Plugin {
                 else if (formatId != null && formatId.contains("audio")) formatSelector = "ba/bestaudio/best";
 
                 YoutubeDLRequest request = new YoutubeDLRequest(videoUrl);
-                request.addOption("-o", targetFile.getAbsolutePath());
-                request.addOption("-f", formatSelector);
+                request.addOption("-o", tempTargetFile.getAbsolutePath());
+                if (formatSelector != null) {
+                    request.addOption("-f", formatSelector);
+                }
+                
+                // If it's an audio format, ask yt-dlp to extract it in the given extension if possible
+                if (formatId != null && formatId.contains("audio")) {
+                    request.addOption("-x");
+                    request.addOption("--audio-format", ext);
+                } else {
+                    request.addOption("--merge-output-format", ext);
+                }
+
                 request.addOption("--no-playlist");
                 request.addOption("--no-mtime");
                 request.addOption("--no-update");
+                request.addOption("--no-part");
                 request.addOption("--no-warnings");
                 request.addOption("--no-check-certificates");
                 request.addOption("--geo-bypass");
@@ -208,17 +239,28 @@ public class YtDlpPlugin extends Plugin {
                         progressObj.put("speed", "Downloading");
                         progressObj.put("eta", etaInSeconds != null && etaInSeconds >= 0 ? etaInSeconds + "s" : "Calculating...");
                         progressObj.put("status", "downloading");
-                        progressObj.put("filePath", targetFile.getAbsolutePath());
+                        progressObj.put("filePath", tempTargetFile.getAbsolutePath());
                         notifyListeners("downloadProgress", progressObj);
                     }
                     return Unit.INSTANCE;
                 });
 
-                if (targetFile.exists() && targetFile.length() > 0) {
+                if (tempTargetFile.exists() && tempTargetFile.length() > 0) {
+                    sendLog("info", "Download complete in temp storage. Copying to public storage...");
+                    try (java.io.InputStream in = new java.io.FileInputStream(tempTargetFile);
+                         java.io.OutputStream out = new java.io.FileOutputStream(targetFile)) {
+                        byte[] buffer = new byte[8192];
+                        int length;
+                        while ((length = in.read(buffer)) > 0) {
+                            out.write(buffer, 0, length);
+                        }
+                    }
+                    tempTargetFile.delete();
+
                     MediaScannerConnection.scanFile(
                         ctx,
                         new String[]{targetFile.getAbsolutePath()},
-                        new String[]{"video/mp4", "audio/mpeg"},
+                        new String[]{ext.equals("mp3") ? "audio/mpeg" : "video/mp4"},
                         (path, uri) -> sendLog("success", "MediaScanner registered file: " + uri)
                     );
 
@@ -264,8 +306,10 @@ public class YtDlpPlugin extends Plugin {
         JSONArray filesArray = new JSONArray();
         File[] dirs = new File[]{
             Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES),
+            Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC),
             Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
             ctx.getExternalFilesDir(Environment.DIRECTORY_MOVIES),
+            ctx.getExternalFilesDir(Environment.DIRECTORY_MUSIC),
             ctx.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS),
             ctx.getFilesDir()
         };
