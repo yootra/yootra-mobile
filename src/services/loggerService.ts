@@ -2,6 +2,7 @@ import { Filesystem, Directory, Encoding } from '@capacitor/filesystem';
 import { Share } from '@capacitor/share';
 import { Clipboard } from '@capacitor/clipboard';
 import { Toast } from '@capacitor/toast';
+import i18n from '../i18n';
 
 export interface LogEntry {
   id: string;
@@ -70,7 +71,7 @@ class LoggerService {
         });
       } catch {
         try {
-          await Toast.show({ text: `File saved: ${filename}`, duration: 'short' });
+          await Toast.show({ text: `${i18n.t('logViewer.saved')}: ${filename}`, duration: 'short' });
         } catch {}
       }
       return true;
@@ -98,14 +99,14 @@ class LoggerService {
     try {
       await Clipboard.write({ string: text });
       try {
-        await Toast.show({ text: 'Logs copied to clipboard', duration: 'short' });
+        await Toast.show({ text: i18n.t('logViewer.copied'), duration: 'short' });
       } catch {}
       return true;
     } catch {
       try {
         await navigator.clipboard.writeText(text);
         try {
-          await Toast.show({ text: 'Logs copied to clipboard', duration: 'short' });
+          await Toast.show({ text: i18n.t('logViewer.copied'), duration: 'short' });
         } catch {}
         return true;
       } catch {

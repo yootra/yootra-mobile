@@ -1,4 +1,5 @@
 import { LocalNotifications } from '@capacitor/local-notifications';
+import i18n from '../i18n';
 
 export class NotificationService {
   static async requestPermission(): Promise<boolean> {
@@ -37,7 +38,7 @@ export class NotificationService {
   }
 
   static async sendDownloadCompletedNotification(title: string, qualityLabel: string, ext: string, fileSizeText?: string) {
-    const notifTitle = 'Download completed';
+    const notifTitle = i18n.t('notifications.downloadCompleted');
     const notifBody = title;
     const extraDetails = `${qualityLabel} • ${fileSizeText || ''} • ${ext.toUpperCase()}`.trim();
 

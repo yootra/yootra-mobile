@@ -1,6 +1,23 @@
 {
+  "languages": {
+    "fa": "فارسی",
+    "en": "English"
+  },
   "app": {
-    "title": "یوترا"
+    "title": "یوترا",
+    "exitBackToast": "برای خروج دوباره دکمه بازگشت را بزنید"
+  },
+  "errors": {
+    "fetchDetails": "خطا در دریافت اطلاعات ویدیو.",
+    "downloadFailed": "دانلود ناموفق بود"
+  },
+  "notifications": {
+    "downloadCompleted": "دانلود تکمیل شد"
+  },
+  "viewCount": {
+    "billion": "B",
+    "million": "M",
+    "thousand": "K"
   },
   "nav": {
     "home": "خانه",
@@ -30,7 +47,8 @@
     "remaining": "زمان باقی‌مونده",
     "pause": "توقف",
     "cancel": "لغو",
-    "currentFile": "فایل در حال دانلود"
+    "currentFile": "فایل در حال دانلود",
+    "calculating": "در حال محاسبه..."
   },
   "downloads": {
     "title": "دانلودها",

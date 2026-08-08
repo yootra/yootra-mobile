@@ -1,6 +1,23 @@
 {
+  "languages": {
+    "fa": "فارسی",
+    "en": "English"
+  },
   "app": {
-    "title": "Yootra"
+    "title": "Yootra",
+    "exitBackToast": "Press back again to exit"
+  },
+  "errors": {
+    "fetchDetails": "Error fetching video details.",
+    "downloadFailed": "Download failed"
+  },
+  "notifications": {
+    "downloadCompleted": "Download completed"
+  },
+  "viewCount": {
+    "billion": "B",
+    "million": "M",
+    "thousand": "K"
   },
   "nav": {
     "home": "Home",
@@ -30,7 +47,8 @@
     "remaining": "Remaining",
     "pause": "Pause",
     "cancel": "Cancel",
-    "currentFile": "Current file"
+    "currentFile": "Current file",
+    "calculating": "Calculating..."
   },
   "downloads": {
     "title": "Downloads",

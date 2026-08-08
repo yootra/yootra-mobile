@@ -221,7 +221,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                     {t('settings.language')}
                   </div>
                   <div className="text-xs text-base-content/50 mt-0.5">
-                    {i18n.language === 'fa' ? 'فارسی' : 'English'}
+                    {i18n.language === 'fa' ? t('languages.fa') : t('languages.en')}
                   </div>
                 </div>
               </div>
@@ -233,7 +233,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                 }}
                 className="btn btn-xs btn-outline border-base-300 font-semibold text-xs rounded-xl"
               >
-                {i18n.language === 'fa' ? 'English' : 'فارسی'}
+                {i18n.language === 'fa' ? t('languages.en') : t('languages.fa')}
               </button>
             </div>
 

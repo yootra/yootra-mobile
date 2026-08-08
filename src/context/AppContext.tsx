@@ -58,6 +58,7 @@ interface AppContextType {
   changeLanguage: (lang: string) => void;
   activeDownload: DownloadItem | undefined;
   inputUrl: string;
+  setInputUrl: (url: string) => void;
   triggerErrorModal: (error: any, retryAction?: () => void) => void;
   updateInfo: UpdateInfo | null;
   isUpdateModalOpen: boolean;
@@ -196,7 +197,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       setVideoInfo(info);
       return Promise.resolve();
     } catch (err: any) {
-      showToast('Error fetching video details.');
+      showToast(i18n.t('errors.fetchDetails'));
       triggerErrorModal(err, () => handleFetchInfo(url));
       return Promise.reject(err);
     } finally {
@@ -291,7 +292,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         readableSize
       );
     } catch (err: any) {
-      const errorMsgStr = err?.message || 'Download failed';
+      const errorMsgStr = err?.message || i18n.t('errors.downloadFailed');
       setDownloads((prev) =>
         prev.map((item) =>
           item.id === downloadId

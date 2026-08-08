@@ -79,7 +79,7 @@ export const OnboardingView: React.FC<OnboardingViewProps> = ({
                   : 'bg-base-200/50 border-base-300 hover:border-base-300/80 text-base-content/80'
                   }`}
               >
-                <span className="text-lg font-bold">فارسی</span>
+                <span className="text-lg font-bold">{t('languages.fa')}</span>
                 {i18n.language === 'fa' && <Check className="w-5 h-5 text-primary" />}
               </button>
 
@@ -91,7 +91,7 @@ export const OnboardingView: React.FC<OnboardingViewProps> = ({
                   : 'bg-base-200/50 border-base-300 hover:border-base-300/80 text-base-content/80'
                   }`}
               >
-                <span className="text-lg font-bold">English</span>
+                <span className="text-lg font-bold">{t('languages.en')}</span>
                 {i18n.language === 'en' && <Check className="w-5 h-5 text-primary" />}
               </button>
             </div>

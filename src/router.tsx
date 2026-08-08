@@ -28,6 +28,8 @@ import { DownloadsHistory } from './pages/Downloads';
 import { SettingsView } from './pages/Settings';
 import { OnboardingView } from './pages/Onboarding';
 
+import i18n from './i18n';
+
 const RootLayout = () => {
   const router = useRouter();
   const { 
@@ -70,7 +72,7 @@ const RootLayout = () => {
         CapacitorApp.exitApp();
       } else {
         lastBackPress = now;
-        Toast.show({ text: 'برای خروج دوباره دکمه بازگشت را بزنید', duration: 'short' }).catch(console.log);
+        Toast.show({ text: i18n.t('app.exitBackToast'), duration: 'short' }).catch(console.log);
       }
     });
 

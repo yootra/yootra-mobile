@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { VideoInfo, VideoFormat } from '../types/ytdl';
 import { Download, Film, Music, Clock, Eye, CheckCircle2, Sliders } from 'lucide-react';
+import { formatViewCount } from '../utils/formatters';
 
 interface VideoDetailsCardProps {
   videoInfo: VideoInfo;
@@ -13,6 +15,7 @@ export const VideoDetailsCard: React.FC<VideoDetailsCardProps> = ({
   onStartDownload,
   isDownloading
 }) => {
+  const { t, i18n } = useTranslation();
   const [selectedFormatId, setSelectedFormatId] = useState<string>(
     videoInfo.formats[0]?.formatId || '720p'
   );
@@ -22,7 +25,7 @@ export const VideoDetailsCard: React.FC<VideoDetailsCardProps> = ({
     videoInfo.formats[0];
 
   const formatFileSize = (bytes: number) => {
-    if (!bytes) return 'Unknown size';
+    if (!bytes) return t('preview.unknownSize', { defaultValue: 'Unknown size' });
     const mb = bytes / (1024 * 1024);
     if (mb > 1000) {
       return `${(mb / 1024).toFixed(2)} GB`;
@@ -52,7 +55,7 @@ export const VideoDetailsCard: React.FC<VideoDetailsCardProps> = ({
           <span className="font-medium text-slate-300">{videoInfo.uploader}</span>
           <span className="flex items-center gap-1">
             <Eye className="w-3.5 h-3.5" />
-            {videoInfo.viewCount.toLocaleString()} views
+            {formatViewCount(videoInfo.viewCount, i18n.language)} {t('preview.views')}
           </span>
         </div>
       </div>
@@ -61,7 +64,7 @@ export const VideoDetailsCard: React.FC<VideoDetailsCardProps> = ({
         <div className="flex items-center justify-between">
           <label className="text-xs font-semibold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
             <Sliders className="w-3.5 h-3.5 text-blue-400" />
-            Select Quality / Format
+            {t('preview.chooseQuality')}
           </label>
           <span className="text-[11px] text-blue-400 font-semibold bg-blue-950/80 px-2 py-0.5 rounded border border-blue-800">
             {formatFileSize(selectedFormat.filesize)}
@@ -125,12 +128,12 @@ export const VideoDetailsCard: React.FC<VideoDetailsCardProps> = ({
         {isDownloading ? (
           <>
             <span className="loading loading-spinner loading-sm"></span>
-            Downloading Video...
+            {t('home.fetching')}
           </>
         ) : (
           <>
             <Download className="w-4 h-4 stroke-[2.5]" />
-            Download ({selectedFormat.qualityLabel})
+            {t('preview.downloadBtn')} ({selectedFormat.qualityLabel})
           </>
         )}
       </button>

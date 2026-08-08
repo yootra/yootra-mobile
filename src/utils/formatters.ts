@@ -1,3 +1,5 @@
+import i18n from '../i18n';
+
 export function formatDuration(sec?: number): string {
   if (!sec || isNaN(sec) || sec <= 0) return '00:00';
   const hrs = Math.floor(sec / 3600);
@@ -39,21 +41,22 @@ export function parseFileSizeInBytes(bytes?: number, qualityLabel: string = '720
 
 export function formatViewCount(views?: number, lang: string = 'fa'): string {
   if (!views || isNaN(views)) return '0';
-  if (lang === 'fa') {
-    if (views >= 1_000_000_000) return `${(views / 1_000_000_000).toFixed(1)} میلیارد`;
-    if (views >= 1_000_000) return `${(views / 1_000_000).toFixed(1)} میلیون`;
-    if (views >= 1_000) return `${(views / 1_000).toFixed(1)} هزار`;
+  const isFa = (lang || i18n.language) === 'fa';
+  if (isFa) {
+    if (views >= 1_000_000_000) return `${(views / 1_000_000_000).toFixed(1)} ${i18n.t('viewCount.billion')}`;
+    if (views >= 1_000_000) return `${(views / 1_000_000).toFixed(1)} ${i18n.t('viewCount.million')}`;
+    if (views >= 1_000) return `${(views / 1_000).toFixed(1)} ${i18n.t('viewCount.thousand')}`;
     return views.toString();
   }
-  if (views >= 1_000_000_000) return `${(views / 1_000_000_000).toFixed(1)}B`;
-  if (views >= 1_000_000) return `${(views / 1_000_000).toFixed(1)}M`;
-  if (views >= 1_000) return `${(views / 1_000).toFixed(1)}K`;
+  if (views >= 1_000_000_000) return `${(views / 1_000_000_000).toFixed(1)}${i18n.t('viewCount.billion')}`;
+  if (views >= 1_000_000) return `${(views / 1_000_000).toFixed(1)}${i18n.t('viewCount.million')}`;
+  if (views >= 1_000) return `${(views / 1_000).toFixed(1)}${i18n.t('viewCount.thousand')}`;
   return views.toString();
 }
 
-export function sanitizeEta(rawEta?: string, lang: string = 'fa'): string {
+export function sanitizeEta(rawEta?: string, _lang: string = 'fa'): string {
   if (!rawEta || rawEta === '-1' || rawEta === '-1s' || rawEta.includes('-') || rawEta === '0' || rawEta === 'downloading') {
-    return lang === 'fa' ? 'در حال محاسبه...' : 'Calculating...';
+    return i18n.t('downloading.calculating');
   }
   return rawEta;
 }
