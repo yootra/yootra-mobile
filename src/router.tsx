@@ -17,6 +17,7 @@ import { CreatorSupportBottomSheet } from './components/CreatorSupportBottomShee
 import { VpnRequiredModal } from './components/VpnRequiredModal';
 import { GeneralErrorModal } from './components/GeneralErrorModal';
 import { LogViewerModal } from './components/LogViewerModal';
+import { UpdateModal } from './components/UpdateModal';
 import { useAppContext } from './context/AppContext';
 
 // Pages
@@ -34,7 +35,8 @@ const RootLayout = () => {
     isVpnModalOpen, setIsVpnModalOpen, handleFetchInfo, setInputUrl,
     generalErrorModal, setGeneralErrorModal,
     isLogViewerOpen, setIsLogViewerOpen,
-    isOnboardingOpen, handleCompleteOnboarding, changeLanguage
+    isOnboardingOpen, handleCompleteOnboarding, changeLanguage,
+    updateInfo, isUpdateModalOpen, setIsUpdateModalOpen
   } = useAppContext();
 
   useEffect(() => {
@@ -160,6 +162,12 @@ const RootLayout = () => {
       <LogViewerModal
         isOpen={isLogViewerOpen}
         onClose={() => setIsLogViewerOpen(false)}
+      />
+
+      <UpdateModal
+        isOpen={isUpdateModalOpen}
+        updateInfo={updateInfo}
+        onClose={() => setIsUpdateModalOpen(false)}
       />
 
       {showBottomNav && (

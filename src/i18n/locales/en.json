@@ -62,7 +62,19 @@
     "locationSaved": "Download location saved.",
     "githubRepo": "GitHub Repository",
     "donate": "Donate & Support",
-    "madeWithLove": "Made with tea and love ☕❤️"
+    "madeWithLove": "Made with tea and love ☕❤️",
+    "checkUpdates": "Check for Updates",
+    "checkUpdatesSub": "Current version: v1.0.0",
+    "checkingUpdates": "Checking for updates...",
+    "noUpdate": "You are using the latest version"
+  },
+  "updateModal": {
+    "title": "New Update Available!",
+    "sub": "A new update for Yootra is ready to install.",
+    "newVersion": "New Version:",
+    "changelog": "Changelog:",
+    "downloadBtn": "Download & Install",
+    "laterBtn": "Later"
   },
   "creatorSupport": {
     "title": "Support Content Creators",

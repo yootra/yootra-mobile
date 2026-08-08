@@ -7,6 +7,7 @@ import { YtDlpService } from '../services/ytdlpService';
 import { NotificationService } from '../services/notificationService';
 import { StatusBarService } from '../services/statusBarService';
 import { parseFileSizeInBytes, formatFileSize, sanitizeEta } from '../utils/formatters';
+import { UpdateService, type UpdateInfo } from '../services/updateService';
 
 export function isIpOrBotError(errorMsg?: string): boolean {
   if (!errorMsg) return false;
@@ -57,8 +58,12 @@ interface AppContextType {
   changeLanguage: (lang: string) => void;
   activeDownload: DownloadItem | undefined;
   inputUrl: string;
-  setInputUrl: (url: string) => void;
   triggerErrorModal: (error: any, retryAction?: () => void) => void;
+  updateInfo: UpdateInfo | null;
+  isUpdateModalOpen: boolean;
+  setIsUpdateModalOpen: (open: boolean) => void;
+  checkForUpdatesManually: () => Promise<void>;
+  isCheckingUpdates: boolean;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -82,6 +87,37 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const [generalErrorModal, setGeneralErrorModal] = useState<GeneralErrorState>({ isOpen: false, errorMsg: '' });
   const [isLogViewerOpen, setIsLogViewerOpen] = useState<boolean>(false);
   const [inputUrl, setInputUrl] = useState<string>('');
+
+  const [updateInfo, setUpdateInfo] = useState<UpdateInfo | null>(null);
+  const [isUpdateModalOpen, setIsUpdateModalOpen] = useState<boolean>(false);
+  const [isCheckingUpdates, setIsCheckingUpdates] = useState<boolean>(false);
+
+  useEffect(() => {
+    UpdateService.checkForUpdates().then((info) => {
+      if (info.updateAvailable) {
+        setUpdateInfo(info);
+        setIsUpdateModalOpen(true);
+      }
+    });
+  }, []);
+
+  const checkForUpdatesManually = async () => {
+    if (isCheckingUpdates) return;
+    setIsCheckingUpdates(true);
+    try {
+      const info = await UpdateService.checkForUpdates();
+      setUpdateInfo(info);
+      if (info.updateAvailable) {
+        setIsUpdateModalOpen(true);
+      } else {
+        showToast(i18n.t('settings.noUpdate'));
+      }
+    } finally {
+      setTimeout(() => {
+        setIsCheckingUpdates(false);
+      }, 750);
+    }
+  };
 
   const [downloads, setDownloads] = useState<DownloadItem[]>(() => {
     const saved = localStorage.getItem('yt_downloads_history');
@@ -306,7 +342,12 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       changeLanguage,
       activeDownload,
       inputUrl, setInputUrl,
-      triggerErrorModal
+      triggerErrorModal,
+      updateInfo,
+      isUpdateModalOpen,
+      setIsUpdateModalOpen,
+      checkForUpdatesManually,
+      isCheckingUpdates
     }}>
       {children}
     </AppContext.Provider>
