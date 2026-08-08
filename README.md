@@ -21,8 +21,9 @@ Yootra is a beautiful, easy-to-use mobile application that allows you to downloa
 - **Direct Share to Download**: No need to copy and paste! Just tap 'Share' on any YouTube video and select Yootra to start your download instantly.
 
 <div align="center">
-  <img src=".github/assets/share_feature.png" alt="Share to Download Feature" width="450" style="border-radius: 16px;" />
+  <img src=".github/assets/share_feature.jpg" alt="Share to Download Feature" width="450" style="border-radius: 16px;" />
 </div>
+
 - **Multiple Qualities**: Choose to download videos in stunning 1080p Full HD, or lower resolutions to save space.
 - **Audio Only**: Convert and download videos directly as MP3 audio files.
 - **Smart Download Manager**: Track your download speed, view remaining time, and effortlessly pause/resume your downloads.
