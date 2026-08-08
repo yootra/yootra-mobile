@@ -1,11 +1,13 @@
 @import "tailwindcss";
-
 @plugin "daisyui" {
-  themes: light, dark, dim, synthwave;
+  themes: light --default, dark --prefersdark, dim, synthwave, retro, cyberpunk, valentine, aqua, black;
 }
 
-@theme {
-  --color-primary: #ba2c2c;
+@layer base {
+  :root,
+  [data-theme] {
+    --color-primary: #ba2c2c !important;
+  }
 }
 
 :root {
