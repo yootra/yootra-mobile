@@ -1,6 +1,6 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { DownloadCloud, Sparkles, X } from 'lucide-react';
+import { DownloadCloud } from 'lucide-react';
 import type { UpdateInfo } from '../services/updateService';
 import { Modal } from './ui/Modal';
 
