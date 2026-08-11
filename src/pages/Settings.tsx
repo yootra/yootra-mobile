@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Folder, Sliders, Moon, Bell, DownloadCloud, Globe, Info, ChevronRight, ChevronLeft, Edit3, Check, Terminal, Code2, Coffee, ExternalLink, RefreshCw } from 'lucide-react';
 import type { AppSettings } from '../types/ytdl';
 import { Toast } from '@capacitor/toast';
 import { LogViewerModal } from '../components/LogViewerModal';
 import { useAppContext } from '../context/AppContext';
+import { UpdateService, APP_VERSION } from '../services/updateService';
 
 interface SettingsViewProps {
   settings: AppSettings;
@@ -25,6 +26,11 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   const [isEditingFolder, setIsEditingFolder] = useState(false);
   const [customPathInput, setCustomPathInput] = useState(settings.downloadLocation || 'Movies');
   const [isLogViewerOpen, setIsLogViewerOpen] = useState(false);
+  const [appVersion, setAppVersion] = useState(APP_VERSION);
+
+  useEffect(() => {
+    UpdateService.getCurrentVersion().then(setAppVersion);
+  }, []);
 
   const showToast = async (text: string) => {
     try {
@@ -310,7 +316,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                 <div className={`text-xs mt-0.5 transition ${
                   isCheckingUpdates ? 'text-primary font-medium animate-pulse' : 'text-base-content/50'
                 }`}>
-                  {isCheckingUpdates ? t('settings.checkingUpdates') : t('settings.checkUpdatesSub')}
+                  {isCheckingUpdates ? t('settings.checkingUpdates') : t('settings.checkUpdatesSub', { version: appVersion })}
                 </div>
               </div>
             </div>
@@ -329,7 +335,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                 </div>
               </div>
               <span className="text-xs font-mono font-semibold text-base-content/60">
-                1.0.0
+                {appVersion}
               </span>
             </div>
           </div>

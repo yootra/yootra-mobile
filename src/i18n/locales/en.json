@@ -82,7 +82,7 @@
     "donate": "Donate & Support",
     "madeWithLove": "Made with tea and love ☕❤️",
     "checkUpdates": "Check for Updates",
-    "checkUpdatesSub": "Current version: v1.0.0",
+    "checkUpdatesSub": "Current version: v{{version}}",
     "checkingUpdates": "Checking for updates...",
     "noUpdate": "You are using the latest version"
   },

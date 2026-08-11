@@ -83,7 +83,7 @@
     "donate": "حمایت مالی (دونیت)",
     "madeWithLove": "ساخته شده با چای و عشق ☕❤️",
     "checkUpdates": "بررسی بروزرسانی",
-    "checkUpdatesSub": "نسخه فعلی: v1.0.0",
+    "checkUpdatesSub": "نسخه فعلی: v{{version}}",
     "checkingUpdates": "در حال بررسی نسخه جدید...",
     "noUpdate": "شما از آخرین نسخه استفاده می‌کنید"
   },
@@ -93,7 +93,7 @@
     "newVersion": "نسخه جدید:",
     "changelog": "تغییرات این نسخه:",
     "downloadBtn": "دانلود و نصب",
-    "laterBtn": "بعداً"
+    "laterBtn": "بعدا"
   },
   "creatorSupport": {
     "title": "یه نکته درباره حمایت از سازنده‌ها",

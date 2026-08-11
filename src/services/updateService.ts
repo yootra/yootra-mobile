@@ -1,3 +1,6 @@
+import { App as CapacitorApp } from '@capacitor/app';
+import packageJson from '../../package.json';
+
 export interface UpdateInfo {
   updateAvailable: boolean;
   latestVersion: string;
@@ -6,13 +9,25 @@ export interface UpdateInfo {
   releaseUrl: string;
 }
 
-export const APP_VERSION = '1.0.0';
+export const APP_VERSION = packageJson.version;
 
 export class UpdateService {
   private static REPO_OWNER = 'yootra';
   private static REPO_NAME = 'yootra-mobile';
 
-  static async checkForUpdates(currentVersion = APP_VERSION): Promise<UpdateInfo> {
+  static async getCurrentVersion(): Promise<string> {
+    try {
+      const info = await CapacitorApp.getInfo();
+      if (info && info.version) {
+        return info.version;
+      }
+    } catch {
+    }
+    return APP_VERSION;
+  }
+
+  static async checkForUpdates(currentVersion?: string): Promise<UpdateInfo> {
+    const activeVersion = currentVersion || await this.getCurrentVersion();
     try {
       const response = await fetch(
         `https://api.github.com/repos/${this.REPO_OWNER}/${this.REPO_NAME}/releases/latest`,
@@ -26,7 +41,7 @@ export class UpdateService {
       if (!response.ok) {
         return {
           updateAvailable: false,
-          latestVersion: currentVersion,
+          latestVersion: activeVersion,
           releaseNotes: '',
           downloadUrl: '',
           releaseUrl: ''
@@ -34,7 +49,7 @@ export class UpdateService {
       }
 
       const data = await response.json();
-      const rawTag = (data.tag_name || '').replace(/^v/i, '').trim();
+      const rawTag = (data.tag_name || '').trim();
       const releaseUrl = data.html_url || `https://github.com/${this.REPO_OWNER}/${this.REPO_NAME}/releases`;
       const releaseNotes = data.body || '';
 
@@ -49,11 +64,11 @@ export class UpdateService {
         }
       }
 
-      const updateAvailable = this.compareVersions(rawTag, currentVersion) > 0;
+      const updateAvailable = this.compareVersions(rawTag, activeVersion) > 0;
 
       return {
         updateAvailable,
-        latestVersion: rawTag,
+        latestVersion: this.cleanVersion(rawTag),
         releaseNotes,
         downloadUrl,
         releaseUrl
@@ -61,7 +76,7 @@ export class UpdateService {
     } catch {
       return {
         updateAvailable: false,
-        latestVersion: currentVersion,
+        latestVersion: activeVersion,
         releaseNotes: '',
         downloadUrl: '',
         releaseUrl: ''
@@ -69,9 +84,18 @@ export class UpdateService {
     }
   }
 
-  private static compareVersions(v1: string, v2: string): number {
-    const p1 = v1.split('.').map((n) => parseInt(n, 10) || 0);
-    const p2 = v2.split('.').map((n) => parseInt(n, 10) || 0);
+  public static cleanVersion(v: string): string {
+    if (!v) return '0.0.0';
+    const match = v.match(/\d+(\.\d+)*/);
+    return match ? match[0] : '0.0.0';
+  }
+
+  public static compareVersions(v1: string, v2: string): number {
+    const s1 = this.cleanVersion(v1);
+    const s2 = this.cleanVersion(v2);
+
+    const p1 = s1.split('.').map((n) => parseInt(n, 10) || 0);
+    const p2 = s2.split('.').map((n) => parseInt(n, 10) || 0);
     const len = Math.max(p1.length, p2.length);
 
     for (let i = 0; i < len; i++) {
